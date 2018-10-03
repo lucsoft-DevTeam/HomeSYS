@@ -1,9 +1,13 @@
-# SwitchClient for Arduino
+# SwitchClient 8 for Arduino
 
 Written for 8-Relay Module
 
-Default i2c address 0x08
+Default i2c address 0x8
 
 # Setup
 
-  - Connect Module to the Ports from 5-12
+  - Coming Soon...
+
+# PCB
+  
+ ![alt text](https://data.lucsoft.de/uploads/SwitchClientPCB.svg? "PCB of the SwitchClient")
