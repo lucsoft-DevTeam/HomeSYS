@@ -10,4 +10,4 @@ Default i2c address 0x8
 
 # PCB
   
- ![alt text](https://data.lucsoft.de/uploads/SwitchClientPCB.svg? "PCB of the SwitchClient")
+ ![alt text](https://data.lucsoft.de/uploads/SwitchClientPCB.svg# "PCB of the SwitchClient")
