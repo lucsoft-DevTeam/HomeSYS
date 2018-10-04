@@ -1,8 +1,13 @@
 # HomeSYS
- A DIY Home System for you needs
-### You need:
+  A DIY Home System for you needs
+  
+   [Discord](https://discord.gg/9GHYtuu)
+ 
+## You need:
 
  - RaspberryPi / BananaPi with NodeJS
- - And I2C Clients (Arduino, LCD Display)
- - For DoorAuth: RFID Scanner
- - Using HomeKit / WebRequest
+ - Using HomeKit / WebRequest (Soon: Alex & Google)
+ - Soldering Iron
+ - Buying Parts and the PCB for the individually Module
+
+ 
