@@ -1,5 +1,5 @@
-# DIYHomeSystem
-
+# HomeSYS
+ A DIY Home System for you needs
 ### You need:
 
  - RaspberryPi / BananaPi with NodeJS
