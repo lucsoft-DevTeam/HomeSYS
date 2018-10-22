@@ -1,4 +1,4 @@
-# HomeSYS
+# HomeSYS is in Development
   A DIY Home System for you needs
   
    [Discord](https://discord.gg/9GHYtuu)
