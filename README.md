@@ -1,4 +1,6 @@
 # HomeSYS is in Development
+![logo](https://github.com/lucsoft-DevTeam/HomeSYS/blob/master/logo.png?raw=true)
+
   A DIY Home System for you needs
   
    [Discord](https://discord.gg/9GHYtuu)
