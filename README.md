@@ -15,7 +15,6 @@
 
  - RaspberryPi / BananaPi with NodeJS
  - Using HomeKit / WebRequest (Soon: Alex & Google)
- - Soldering Iron
- - Buying Parts and the PCB for the individually Module
+ - IF you wanna do the stuff yourself: Soldering Iron, Buying Parts and the PCB for the individually Module
 
  
