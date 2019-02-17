@@ -1,4 +1,4 @@
-# Mainframe
+# Mainframe of HomeSYS
 
 **WARN: EVERYTHING WILL BE CONTROLED WITH AN GUI THIS IS JUST THE BEGINING!**
 ### Lets Start!...
