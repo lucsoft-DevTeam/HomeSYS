@@ -3,12 +3,13 @@ targetversion="v10.15.2"
 echo "Installing lucsofts HomeSYS:Mainframe"
 echo "We do all for you just wait..."
 echo ""
-function installNodeJS() {
+
+installNodeJS() {
     curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
-    sudo apt-get update
+    sudo apt-get update -y
     sudo apt-get install nodejs -y        
 }
-function phaseOneNodeJS() {
+phaseOneNodeJS() {
     echo "Phase 1: Checking if NodeJS is Installed"
     if which node > /dev/null 
     then
@@ -17,15 +18,15 @@ function phaseOneNodeJS() {
             echo "true" 
         else 
             sudo apt-get remove nodejs
-            installNodeJS();
+            installNodeJS
         fi
 
     else
         echo "Installing Node ..."
-        installNodeJS();        
+        installNodeJS      
     fi
 }
-function phaseTwoMainframe() {
+phaseTwoMainframe() {
     echo "Phase 2: Downloading the Mainframe"
     cd /root/
     mkdir Mainframe
