@@ -16,7 +16,7 @@ phaseOneNodeJS() {
     then
         nodeversion=`node -v`
         if [ "$nodeversion" = "$targetversion" ]; then
-            phaseTwoMainframe()
+            phaseTwoMainframe
         else 
             sudo apt-get remove nodejs -qq -y
             installNodeJS
