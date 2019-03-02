@@ -6,8 +6,9 @@ echo ""
 
 installNodeJS() {
     curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
-    sudo apt-get update -y
-    sudo apt-get install nodejs -y        
+    sudo apt-get update -qq -y
+    sudo apt-get install nodejs -qq -y        
+    phaseTwoMainframe
 }
 phaseOneNodeJS() {
     echo "Phase 1: Checking if NodeJS is Installed"
@@ -15,9 +16,9 @@ phaseOneNodeJS() {
     then
         nodeversion=`node -v`
         if [ "$nodeversion" = "$targetversion" ]; then
-            echo "true" 
+            phaseTwoMainframe()
         else 
-            sudo apt-get remove nodejs
+            sudo apt-get remove nodejs -qq -y
             installNodeJS
         fi
 
