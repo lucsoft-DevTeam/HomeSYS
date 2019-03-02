@@ -49,3 +49,4 @@ function phaseTwoMainframe() {
     echo "Phase 3: Installing the Mainframe"
     npm install
 }
+phaseOneNodeJS
