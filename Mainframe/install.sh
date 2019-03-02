@@ -6,8 +6,8 @@ echo ""
 
 installNodeJS() {
     curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash - > /dev/null 2>&1
-    sudo apt-get update -qq -y
-    sudo apt-get install nodejs -qq -y        
+    sudo apt-get update -qq -y > /dev/null 2>&1
+    sudo apt-get install nodejs -qq -y > /dev/null 2>&1
     phaseTwoMainframe
 }
 phaseOneNodeJS() {
@@ -52,7 +52,8 @@ phaseTwoMainframe() {
     wget -q https://raw.githubusercontent.com/lucsoft-DevTeam/HomeSYS/beta/Mainframe/modules/lucsoft.webServer.js
     cd ..
     echo "Phase 3: Installing the Mainframe"
-    npm install
+    sudo npm install > /dev/null 2>&1
+    phaseThreeServiceInstall
 }
 phaseThreeServiceInstall() {
     echo "Phase 3: Installing the Mainframe Service"
@@ -61,6 +62,6 @@ phaseThreeServiceInstall() {
     echo "Phase 4: Starting the Mainframe Service"
     systemctl enable homesys.service
     systemctl start homesys.service
-    echo "Phase 5: Go on homesys.local and config your Mainframe"
+    echo "Phase 5: Connect to the Server via Browser"
 }
 phaseOneNodeJS
