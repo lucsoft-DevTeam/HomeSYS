@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HomeSYS Login</title>
+    <script src="https://api.lucsoft.de/flatweb/beta/webgen"></script>
+    <script src="https://api.lucsoft.de/flatweb/beta/jquery.js"></script>
+    <link href="https://fonts.googleapis.com/css?family=Material+Icons|Roboto:200,300,100" rel="stylesheet">
+    <link rel="stylesheet" href="https://api.lucsoft.de/flatweb/beta/init.php">
+    <theme><link rel="stylesheet" href="https://api.lucsoft.de/themes/FlatWeb/css/black.css"></theme>
+</head>
+    <body class="FlatWeb">
+        <article id="page" class="">
+        </article>
+        <script>
+            loadModule("lucsoft.database", () => {database.apiurl = "/"; 
+            loadParticlesDefault();
+                addElement("titlew",{
+                    title: "HomeSYS",
+                    subtitle: "Combined Smart Home",
+                    subtitleposx: "0rem"
+                }, () => {});
+                addElement("loginwindow", {text: {password: "Password", button: "Login", text:"HomeSYS"},
+                beforelogin: () => {
+                    $('#loginerrormsg').css("color", "black");
+                    $('#loginerrormsg').css("margin", "1.6rem");
+                    $('#loginerrormsg').css("font-weight", "300");
+                    $('#loginerrormsg').html("Anmeldung Läuft...");  
+                },afterlogin: () => {
+                    loadHome();
+                    $('nav').css("opacity", "100");
+                },onError: () => {
+                    $('#loginerrormsg').css("color", "red");
+                    $('#loginerrormsg').css("margin", "1rem");
+                    $('#loginerrormsg').css("font-weight", "600");                    
+                    $('#loginerrormsg').html("Deine Anmeldedaten sind falsch");
+                }}, (e)=> { 
+                });
+            });
+                
+        </script>
+    </body>
+</html>
