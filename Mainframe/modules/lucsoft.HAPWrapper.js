@@ -239,26 +239,29 @@ ed.createCustom = (settings) => {
         callback(); 
     });
 
-
-    cmodule.addService(Service.StatelessProgrammableSwitch).getLabelService(Characteristic.ServiceLabelNamespace.DOTS);
-    
-
-    cmodule.getService(Service.StatelessProgrammableSwitch,settings.displayName).getCharacteristic(Characteristic.ProgrammableSwitchEvent)
-    .setProps(1)
-    cmodule.getService(Service.StatelessProgrammableSwitch).getCharacteristic(Characteristic.ServiceLabelIndex)
-    .setValue({
+    const labelService = new Service.LabelService(settings.displayName)
+    labelService.getCharacteristic(Characteristic.ServiceLabelNamespace)
+    .setValue(Characteristic.ServiceLabelNamespace.ARABIC_NUMERALS)
+    cmodule.addService(labelService)
+    const button1Service = new Service.StatelessProgrammableSwitch('Button 1', 1)
+    button1Service.getCharacteristic(Characteristic.ProgrammableSwitchEvent)
+    .setProps({
         minValue: Characteristic.ProgrammableSwitchEvent.SINGLE_PRESS,
         maxValue: Characteristic.ProgrammableSwitchEvent.SINGLE_PRESS
-    });
-    
-    cmodule.getService(Service.StatelessProgrammableSwitch)
-    .getCharacteristic(Characteristic.ProgrammableSwitchEvent)
-    .on('get', function(callback) {
-        callback(1); 
     })
-    .on('set', function(value,callback) {
-        callback(value); 
-    });
+    button1Service.getCharacteristic(Characteristic.LabelIndex)
+    .setValue(1)
+    cmodule.addService(button1Service)
+    const button2Service = new Service.StatelessProgrammableSwitch('Button 2', 2)
+    button2Service.getCharacteristic(Characteristic.ProgrammableSwitchEvent)
+    .setProps({
+        minValue: Characteristic.ProgrammableSwitchEvent.SINGLE_PRESS,
+        maxValue: Characteristic.ProgrammableSwitchEvent.SINGLE_PRESS
+    })
+    button2Service.getCharacteristic(Characteristic.LabelIndex)
+    .setValue(2)
+    cmodule.addService(button2Service)
+
     bridge.addBridgedAccessory(cmodule);
     ed.cnsl.sendMessage(settings.displayName + " was added to HomeKit");
 };
