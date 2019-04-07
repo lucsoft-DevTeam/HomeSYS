@@ -54,8 +54,8 @@
                         "fun":"loadProjects();"
                     },
                     {
-                        "title":"Apps",
-                        "fun":"mailto:mail@lucsoft.de"
+                        "title":"Modules",
+                        "fun":"loadModules()"
                     },
                     {
                         "title":"Settings",
@@ -79,7 +79,7 @@
                             </content>
                         </splitView>
                     </span>`,
-                    text: { title: "Einstellung" },
+                    text: { title: "Settings" },
                     max_width: "90rem",
                     buttons: [ ]
                 },
@@ -117,7 +117,7 @@
                     big: false,
                     nocenter: true,
                     list:[
-                        {text: "Restart", onclick: "getData('http://homesys.local/restart', (e) => {$('#log2').html('HomeSYS is Restarting...');});"},
+                        {text: "Reload", onclick: "getData('http://homesys.local/restart', (e) => {$('#log2').html('HomeSYS is Restarting...');});"},
                         {text: "Debug Message", onclick: "getData('http://homesys.local/debugmsg', (e) => {updateLog(false)});"},
                         {text: "Toggle Autoscroll", onclick: "autoscroll = !autoscroll"}
                     ]
@@ -128,6 +128,7 @@
                 interval = setInterval(() => {updateLog()}, 2000); 
                 
             }
+
             function loadSettingsDashboard() {
                 $("content").html("")
                 addElement("cardlist",{
@@ -167,6 +168,49 @@
                         {title: "request"}
                     ]
                 }, () => {}, "content");
+            }
+            function loadModules() {
+                $('article').remove();
+                $('nav').remove();
+                createNav(menu, "style_nobox");
+                $('body').append('<article id="page" class="padding"></article>');
+                addElement("titles", {
+                    title: "The Marketplace for your HomeSYS",
+                    subtitle: "Here you can install, update or remove Modules"
+                }, () => {});
+                elementscount++;
+                $("#page").append(`<cardlist id="${elementscount}" class="iconlist"></cardlist>`);
+                $(`#${elementscount}`).addClass("max-width");
+                $(`#${elementscount}`).addClass("grid_columns_4");
+                
+                var elementscountid = elementscount;
+                elementscount++;
+                $(`#${elementscountid}`).append(`<card id="${elementscount}"class="iconcard">
+                    <img src="https://data.lucsoft.de/uploads/HomeSYS_compressd2.png">
+                    <div>
+                    <span class="title">HomeKit / Siri</span>
+                    <span class="subtitle">Using HAP-NodeJS, HAPWrapper</span>
+                    <center><button class="one">Install and Reload</button></center>
+                    </div>
+                </card>`);
+                elementscount++;
+                $(`#${elementscountid}`).append(`<card id="${elementscount}"class="iconcard">
+                    <img src="https://data.lucsoft.de/uploads/HomeSYS_compressd2.png">
+                    <div>
+                    <span class="title">lucsoft.webServer</span>
+                    <span class="subtitle">Required Module</span>
+                    <button class="one disabled">You can't remove it...</button>
+                    </div>
+                </card>`);
+                $(`#${elementscountid}`).append(`<card id="${elementscount}"class="iconcard">
+                    <img src="https://data.lucsoft.de/uploads/HomeSYS_compressd2.png">
+                    <div>
+                    <span class="title">lucsoft.Mainframe</span>
+                    <span class="subtitle">Required Module (v0.2.0)</span>
+                    <button class="one disabled">You can't remove it...</button>
+                    </div>
+                </card>`);
+                 
             }
             function loadHome() {
                 $('article').remove();
