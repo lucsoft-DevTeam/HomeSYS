@@ -61,7 +61,8 @@ phaseThreeServiceInstall() {
     wget -q https://raw.githubusercontent.com/lucsoft-DevTeam/HomeSYS/testing/Mainframe/homesys.service
     echo "Phase 4: Starting the Mainframe Service"
     systemctl enable homesys.service
-    systemctl start homesys.service
-    echo "Phase 5: Connect to the Server via Browser"
+    hostname homesys
+    echo "Phase 5: Restarting..."
+    shutdown -h now
 }
 phaseOneNodeJS
