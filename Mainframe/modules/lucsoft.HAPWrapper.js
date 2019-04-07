@@ -13,8 +13,9 @@ var bridge;
 ed.Accessorylist = [];
 ed.createLock = (settings) => {
     var lock = new Accessory('Lock', uuid.generate("homesys:lock:" + settings.serialNumber));
+    var response= {};
 	ed.Accessorylist.push({
-        locked: false,
+        locked: settings.locked,
         accessory: lock,
 		serialNumber: settings.serialNumber,
 		lock: function() {
@@ -41,7 +42,7 @@ ed.createLock = (settings) => {
 	.on('set', function(value, callback) {
         if (value == Characteristic.LockTargetState.UNSECURED) {
             ed.Accessorylist.find(x => x.serialNumber == settings.serialNumber).unlock();
-            settings.onUnLock();
+            settings.onLockState(false);
 		    callback(); 
 			lock
 			.getService(Service.LockMechanism)
@@ -49,7 +50,7 @@ ed.createLock = (settings) => {
 		}
 		else if (value == Characteristic.LockTargetState.SECURED) {
             ed.Accessorylist.find(x => x.serialNumber == settings.serialNumber).lock();
-            settings.onLock();
+            settings.onLockState(true);
 			callback(); 
 			lock
 			.getService(Service.LockMechanism)
@@ -70,9 +71,33 @@ ed.createLock = (settings) => {
             callback(err, Characteristic.LockCurrentState.UNSECURED);
 		}
     });
-    
+    response.updateState = (e) => {
+        if(e) {
+            lock
+            .getService(Service.LockMechanism)
+            .setCharacteristic(Characteristic.LockTargetState, Characteristic.LockCurrentState.SECURED);
+            ed.Accessorylist.find(x => x.serialNumber == settings.serialNumber).lock();
+
+        } else {
+            lock
+            .getService(Service.LockMechanism)
+            .setCharacteristic(Characteristic.LockTargetState, Characteristic.LockCurrentState.UNSECURED);
+            setTimeout(() => {
+                lock
+                .getService(Service.LockMechanism)
+                .setCharacteristic(Characteristic.LockCurrentState,  Characteristic.LockCurrentState.UNSECURED);
+            }, 1000);
+            
+            ed.Accessorylist.find(x => x.serialNumber == settings.serialNumber).unlock();
+        }
+
+    }
     ed.cnsl.sendMessage(settings.displayName + " was added to HomeKit");
     bridge.addBridgedAccessory(lock);
+    if(settings.locked) {
+        response.updateState(settings.locked);
+    }
+    return response;
 }
 
 ed.createLamp = (settings) => {
@@ -120,6 +145,7 @@ ed.createLamp = (settings) => {
     }
     reponse.getPower = (e) => {
         return ed.Accessorylist.find(x => x.serialNumber == settings.serialNumber).power;
+
     }
     
     if(settings.enableBrightness) {
@@ -164,6 +190,80 @@ ed.createLamp = (settings) => {
         reponse.updatePower(true);
     }
     return reponse;
+};
+
+ed.createMotionSensor = (settings) => {
+    var motionsensor = new Accessory(settings.displayName, uuid.generate('homesys:light' + settings.serialNumber));  
+    var response = {};
+    ed.Accessorylist.push({
+        state: false,
+        accessory: motionsensor,
+		serialNumber: settings.serialNumber,
+    });
+      
+    motionsensor.getService(Service.AccessoryInformation).setCharacteristic(Characteristic.Manufacturer, "lucsofts HomeSYS").setCharacteristic(Characteristic.Model, settings.model).setCharacteristic(Characteristic.SerialNumber, settings.serialNumber);
+    motionsensor.on('identify', function(paired, callback) {
+        callback(); 
+    });
+    motionsensor
+    .addService(Service.MotionSensor, "Fake Motion Sensor")
+    .getCharacteristic(Characteristic.MotionDetected)
+    .on('get', function(callback) {
+        callback(null, ed.Accessorylist.find(x => x.serialNumber == settings.serialNumber).state);
+    });
+    response.updateState = (e) => {
+        motionsensor
+        .getService(Service.MotionSensor)
+        .setCharacteristic(Characteristic.MotionDetected, e);
+        ed.Accessorylist.find(x => x.serialNumber == settings.serialNumber).state = e;
+    }
+    response.getState = () => {
+        return ed.Accessorylist.find(x => x.serialNumber == settings.serialNumber).state;
+    }
+    bridge.addBridgedAccessory(motionsensor);
+    ed.cnsl.sendMessage(settings.displayName + " was added to HomeKit");
+    return response;
+};
+ed.createCustom = (settings) => {
+
+    var cmodule = new Accessory(settings.displayName, uuid.generate('homesys:light' + settings.serialNumber));  
+    var response = {};
+    ed.Accessorylist.push({
+        state: false,
+        accessory: cmodule,
+		serialNumber: settings.serialNumber,
+    });
+      
+    cmodule.getService(Service.AccessoryInformation).setCharacteristic(Characteristic.Manufacturer, "lucsofts HomeSYS").setCharacteristic(Characteristic.Model, settings.model).setCharacteristic(Characteristic.SerialNumber, settings.serialNumber);
+    cmodule.on('identify', function(paired, callback) {
+        callback(); 
+    });
+
+    const labelService = new Service.LabelService(settings.displayName)
+    labelService.getCharacteristic(Characteristic.ServiceLabelNamespace)
+    .setValue(Characteristic.ServiceLabelNamespace.ARABIC_NUMERALS)
+    cmodule.addService(labelService)
+    const button1Service = new Service.StatelessProgrammableSwitch('Button 1', 1)
+    button1Service.getCharacteristic(Characteristic.ProgrammableSwitchEvent)
+    .setProps({
+        minValue: Characteristic.ProgrammableSwitchEvent.SINGLE_PRESS,
+        maxValue: Characteristic.ProgrammableSwitchEvent.SINGLE_PRESS
+    })
+    button1Service.getCharacteristic(Characteristic.LabelIndex)
+    .setValue(1)
+    cmodule.addService(button1Service)
+    const button2Service = new Service.StatelessProgrammableSwitch('Button 2', 2)
+    button2Service.getCharacteristic(Characteristic.ProgrammableSwitchEvent)
+    .setProps({
+        minValue: Characteristic.ProgrammableSwitchEvent.SINGLE_PRESS,
+        maxValue: Characteristic.ProgrammableSwitchEvent.SINGLE_PRESS
+    })
+    button2Service.getCharacteristic(Characteristic.LabelIndex)
+    .setValue(2)
+    cmodule.addService(button2Service)
+
+    bridge.addBridgedAccessory(cmodule);
+    ed.cnsl.sendMessage(settings.displayName + " was added to HomeKit");
 };
 
 storage.init();
