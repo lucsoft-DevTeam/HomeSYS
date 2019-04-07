@@ -12,4 +12,6 @@
 
 ### Usage
 
-After install go to http://homesys.local and login with the password in the config
+   Change you Hostname to homesys.
+   
+   After install go to http://homesys.local and login with the password in the config
