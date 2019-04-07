@@ -5,14 +5,14 @@ var config = require("../lib/config");
 var mmang = module.exports = {};
 mmang.onReady = (e) => {};
 mmang.onModuleLoaded = (e) => {
-    console.log(`[${tc.getTimestamp(new Date())}] <${e.name}> Loaded v${e.version} `);
+    tc.log(`[${tc.getTimestamp(new Date())}] <${e.name}> Loaded v${e.version} `);
     mmang.onReady(mmang.modules[e.id]);
 };
 mmang.onModuleInitializing = (e) => {
-    console.log(`[${tc.getTimestamp(new Date())}] <${e.name}> Initializing v${e.version} `);
+    tc.log(`[${tc.getTimestamp(new Date())}] <${e.name}> Initializing v${e.version} `);
 };
 mmang.onModuleSendMesage = (e,msg) => {
-    console.log(`[${tc.getTimestamp(new Date())}] <${e} | \x1b[33mINFO\x1b[0m > ${msg}`);
+    tc.log(`[${tc.getTimestamp(new Date())}] <${e} | \x1b[33mINFO\x1b[0m > ${msg}`);
 };
 mmang.onModulesAllCompleted = () => {
 
@@ -20,7 +20,7 @@ mmang.onModulesAllCompleted = () => {
 mmang.onModulesInitialized = () => {};
 mmang.modules = [];
 mmang.autoLoad = () => {
-    console.log(`[${tc.getTimestamp(new Date())}] <lucsoft.Mainframe> Loading Modules...`);
+    tc.log(`[${tc.getTimestamp(new Date())}] <lucsoft.Mainframe> Loading Modules...`);
     fs.readdir("./modules/",(e,f) => { 
         for (let index = 0; index < f.length; index++) {
             const element = f[index];

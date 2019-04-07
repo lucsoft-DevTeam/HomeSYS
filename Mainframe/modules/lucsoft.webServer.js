@@ -1,18 +1,25 @@
 var exportdata = module.exports = {};
 exportdata.version = "0.1.0";
 var msg;
+
 var express = require('express');
 var app = express();
+
 var https = require('https');
-var fs = require('fs');
+
 var unzip = require('unzip');
 var fs = require('fs');
 const request = require('request');
+const bodyParser = require('body-parser');
+app.use(bodyParser.urlencoded({ extended: true }));
 
 exportdata.web = app;
 exportdata.getHTTPS = (url, response) => {
     https.get(url, response);
 };
+exportdata.readFile = function (path) {
+  return fs.readFileSync(path);
+}
 exportdata.readJson = function (path) {
   var contents = fs.readFileSync(path);
   return JSON.parse(contents);
@@ -52,7 +59,7 @@ exportdata.deleteFiles = function(files, callback){
 exportdata.loadModule = () => {};
 exportdata.port = 80;
 exportdata.startWebserver = () => {
-    app.listen(exportdata.port, function () {
-        exportdata.cnsl.sendMessage("Server is running on port " + exportdata.port + "...");
-    });  
+  app.listen(80, function () {
+
+  })
 };

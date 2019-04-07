@@ -99,7 +99,6 @@ ed.createLock = (settings) => {
     }
     return response;
 }
-
 ed.createLamp = (settings) => {
     var light = new Accessory(settings.displayName, uuid.generate('homesys:light' + settings.serialNumber));  
     var reponse = {};
@@ -191,12 +190,11 @@ ed.createLamp = (settings) => {
     }
     return reponse;
 };
-
 ed.createMotionSensor = (settings) => {
     var motionsensor = new Accessory(settings.displayName, uuid.generate('homesys:light' + settings.serialNumber));  
     var response = {};
     ed.Accessorylist.push({
-        state: false,
+        state: settings.state,
         accessory: motionsensor,
 		serialNumber: settings.serialNumber,
     });
@@ -206,7 +204,7 @@ ed.createMotionSensor = (settings) => {
         callback(); 
     });
     motionsensor
-    .addService(Service.MotionSensor, "Fake Motion Sensor")
+    .addService(Service.MotionSensor, settings.displayName)
     .getCharacteristic(Characteristic.MotionDetected)
     .on('get', function(callback) {
         callback(null, ed.Accessorylist.find(x => x.serialNumber == settings.serialNumber).state);
@@ -220,12 +218,96 @@ ed.createMotionSensor = (settings) => {
     response.getState = () => {
         return ed.Accessorylist.find(x => x.serialNumber == settings.serialNumber).state;
     }
+    if(settings.state) {
+        reponse.updateState(true);
+    }
     bridge.addBridgedAccessory(motionsensor);
     ed.cnsl.sendMessage(settings.displayName + " was added to HomeKit");
     return response;
-};
-ed.createCustom = (settings) => {
 
+};
+ed.createSwitch = (settings) => {
+    var motionsensor = new Accessory(settings.displayName, uuid.generate('homesys:light' + settings.serialNumber));  
+    var response = {};
+    ed.Accessorylist.push({
+        state: false,
+        accessory: motionsensor,
+		serialNumber: settings.serialNumber,
+    });
+      
+    motionsensor.getService(Service.AccessoryInformation).setCharacteristic(Characteristic.Manufacturer, "lucsofts HomeSYS").setCharacteristic(Characteristic.Model, settings.model).setCharacteristic(Characteristic.SerialNumber, settings.serialNumber);
+    motionsensor.on('identify', function(paired, callback) {
+        callback(); 
+    });
+    motionsensor
+    .addService(Service.Switch, settings.displayName)
+    .getCharacteristic(Characteristic.On)
+    .on('set', function(value, callback) {
+        ed.Accessorylist.find(x => x.serialNumber == settings.serialNumber).state = value;
+        callback(); 
+        
+    })
+    .on('get', function(callback) {
+        callback(null, ed.Accessorylist.find(x => x.serialNumber == settings.serialNumber).state);
+    });
+    response.updateState = (e) => {
+        motionsensor
+        .getService(Service.Switch)
+        .setCharacteristic(Characteristic.On, e);
+        ed.Accessorylist.find(x => x.serialNumber == settings.serialNumber).state = e;
+    }
+    response.getState = () => {
+        return ed.Accessorylist.find(x => x.serialNumber == settings.serialNumber).state;
+    }
+    if(settings.state) {
+        response.updateState(true);
+    }
+    bridge.addBridgedAccessory(motionsensor);
+    ed.cnsl.sendMessage(settings.displayName + " was added to HomeKit");
+    return response;
+}
+ed.createOutlet = (settings) => {
+    var motionsensor = new Accessory(settings.displayName, uuid.generate('homesys:light' + settings.serialNumber));  
+    var response = {};
+    ed.Accessorylist.push({
+        state: false,
+        accessory: motionsensor,
+		serialNumber: settings.serialNumber,
+    });
+      
+    motionsensor.getService(Service.AccessoryInformation).setCharacteristic(Characteristic.Manufacturer, "lucsofts HomeSYS").setCharacteristic(Characteristic.Model, settings.model).setCharacteristic(Characteristic.SerialNumber, settings.serialNumber);
+    motionsensor.on('identify', function(paired, callback) {
+        callback(); 
+    });
+    motionsensor
+    .addService(Service.Outlet, settings.displayName)
+    .getCharacteristic(Characteristic.On)
+    .on('set', function(value, callback) {
+        ed.Accessorylist.find(x => x.serialNumber == settings.serialNumber).state = value;
+        callback(); 
+        
+    })
+    .on('get', function(callback) {
+        callback(null, ed.Accessorylist.find(x => x.serialNumber == settings.serialNumber).state);
+    });
+    response.updateState = (e) => {
+        motionsensor
+        .getService(Service.Outlet)
+        .setCharacteristic(Characteristic.On, e);
+        ed.Accessorylist.find(x => x.serialNumber == settings.serialNumber).state = e;
+    }
+    response.getState = () => {
+        return ed.Accessorylist.find(x => x.serialNumber == settings.serialNumber).state;
+    }
+    if(settings.state) {
+        response.updateState(true);
+    }
+    bridge.addBridgedAccessory(motionsensor);
+    ed.cnsl.sendMessage(settings.displayName + " was added to HomeKit");
+    return response;
+}
+
+ed.createTEST = (settings) => {
     var cmodule = new Accessory(settings.displayName, uuid.generate('homesys:light' + settings.serialNumber));  
     var response = {};
     ed.Accessorylist.push({
@@ -239,10 +321,10 @@ ed.createCustom = (settings) => {
         callback(); 
     });
 
-    const labelService = new Service.LabelService(settings.displayName)
-    labelService.getCharacteristic(Characteristic.ServiceLabelNamespace)
+    const serviceLabel = new Service.ServiceLabel(settings.displayName)
+    serviceLabel.getCharacteristic(Characteristic.ServiceLabelNamespace)
     .setValue(Characteristic.ServiceLabelNamespace.ARABIC_NUMERALS)
-    cmodule.addService(labelService)
+    cmodule.addService(serviceLabel)
     const button1Service = new Service.StatelessProgrammableSwitch('Button 1', 1)
     button1Service.getCharacteristic(Characteristic.ProgrammableSwitchEvent)
     .setProps({
