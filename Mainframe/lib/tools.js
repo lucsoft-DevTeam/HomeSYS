@@ -11,6 +11,21 @@ tools.logerror = (e,text) => {
 tools.getTimestamp = (test) => {
     return ((test.getHours() < 10) ? "0"+ test.getHours(): test.getHours()) + ":" + ((test.getMinutes() < 10) ? "0"+ test.getMinutes(): test.getMinutes()) + ":"+ ((test.getSeconds() < 10) ? "0"+ test.getSeconds(): test.getSeconds()) + ":" + ((test.getMilliseconds() < 100) ? (test.getMilliseconds() < 10) ? "00"+ test.getMilliseconds() : "0"+ test.getMilliseconds() : test.getMilliseconds())+ " " + test.getDate()+ "."+ (test.getMonth() + 1) + "." + test.getFullYear();
 };
+const getCircularReplacer = () => {
+    const seen = new WeakSet();
+    return (key, value) => {
+      if (typeof value === "object" && value !== null) {
+        if (seen.has(value)) {
+          return;
+        }
+        seen.add(value);
+      }
+      return value;
+    };
+  };
+tools.getJson = (objt) => {
+    return JSON.stringify(objt,getCircularReplacer());
+};
 tools.SHA256 = (s) => {
     var chrsz = 8;
     var hexcase = 0;
