@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="https://api.lucsoft.de/flatweb/beta/init.php">
     <theme><link rel="stylesheet" href="https://api.lucsoft.de/themes/FlatWeb/css/white.css"></theme>
 </head>
-    <body class="FlatWeb">
+    <body class="FlatWeb nochange">
         <article id="page" class="">
         </article>
         <script>
@@ -71,8 +71,8 @@
                     content: `<span class="text">
                         <splitView class="one nomargin">
                             <sidebar class="list">
-                                    <span class="item" onclick="loadSettingsDashboard()">Dashboard</span>
-                                    <span class="item" onclick="loadSettingsSystem()">System</span>
+                                <span class="item" onclick="loadSettingsDashboard()">Dashboard</span>
+                                <span class="item" onclick="loadSettingsSystem()">System</span>
                                 <span class="item" onclick="loadSettingsAbout()">About</span>
                             </sidebar>
                             <content style="padding: 1rem">
@@ -94,7 +94,7 @@
                     clearInterval(interval);
                     return;
                 }
-                getData('http://homesys.local/log', (e) => {
+                getDataAuth('http://homesys.local/log',database.account.password, (e) => {
                     $('.log').html(e);
                     if (autoscroll){
                         if(test) {
@@ -112,23 +112,42 @@
                 try {
                     clearInterval(interval);
                 } catch(e){}
-                $("content").html('<span class="titleg">Debugging</span>');
+                $("content").html('<span class="titleg">Modules</span><div id="moduleitems"></div>');
+                $("#moduleitems").append('<center id="tshfuiosd"><br><button class="one"onclick="enableModules()">Enable Modules View</button><br><br></center>');
+                
+                $("content").append('<br>');
+                $("content").append('<span class="titleg">Debugging</span><div id="debuggingitems"></div>');
+                $("#debuggingitems").append('<center id="tshfuiosd"><br><button class="one"onclick="enableLog()">Enable Debugging</button><br><br></center>');
+                
+            }
+            function enableModules() {
+                getDataAuth('http://homesys.local/modules',database.account.password, (e) => {
+                    var objs = JSON.parse(e);
+                    $("#moduleitems").html('<list class="style2 nomargin"></list>');
+                    
+                    objs.forEach(element => {                
+                        $("list").append('<item>' + element.name+'<span class="right">' + ((element.disabled) ? "DISABLED": "ENABLED" )+'</span></item>');                            
+
+                            
+                    });              
+                    
+                });
+            }
+            function enableLog() {
+                $("#debuggingitems").html("");
                 addElement("buttons",{
                     big: false,
                     nocenter: true,
                     list:[
-                        {text: "Reload", onclick: "getData('http://homesys.local/restart', (e) => {$('#log2').html('HomeSYS is Restarting...');});"},
-                        {text: "Debug Message", onclick: "getData('http://homesys.local/debugmsg', (e) => {updateLog(false)});"},
+                        {text: "Reload", onclick: "getDataAuth('http://homesys.local/restart',database.account.password, (e) => {$('#log2').html('HomeSYS is Restarting...');});"},
+                        {text: "Debug Message", onclick: "getDataAuth('http://homesys.local/debugmsg',database.account.password, (e) => {updateLog(false)});"},
                         {text: "Toggle Autoscroll", onclick: "autoscroll = !autoscroll"}
                     ]
-                }, () => {}, "content");
-                $("content").append('<div id="log2" class="log">test</div>');
-                
+                }, () => {}, "#debuggingitems");
+                $("#debuggingitems").append('<div id="log2" class="log">test</div>');
                 updateLog(false);
                 interval = setInterval(() => {updateLog()}, 2000); 
-                
             }
-
             function loadSettingsDashboard() {
                 $("content").html("")
                 addElement("cardlist",{

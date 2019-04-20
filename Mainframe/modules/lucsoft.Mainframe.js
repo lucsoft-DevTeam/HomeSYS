@@ -3,7 +3,6 @@
 */
 var fs = require("fs");
 fs.writeFileSync(process.cwd() + "/lib/log.txt", "");
-
 var config = require("../lib/config");
 var tc = require("../lib/tools");
 tc.log(`
@@ -35,54 +34,52 @@ mmanager.onModulesInitialized = (modules, cb) => {
         }
     });
 };
-const getCircularReplacer = () => {
-    const seen = new WeakSet();
-    return (key, value) => {
-      if (typeof value === "object" && value !== null) {
-        if (seen.has(value)) {
-          return;
-        }
-        seen.add(value);
-      }
-      return value;
-    };
-  };
+
 mmanager.onReady = (e) => {
     
     if(e.name == "lucsoft.webServer") {
         e.data.web.get('/', function (req, res) {
-            res.sendFile(process.cwd() + '/lib/web/login.html');
-            
+            res.sendFile(process.cwd() + '/lib/web/login.html');    
         });
+        function requireAuth(req, res,callback) {
+            if(req.headers['token'] == tc.SHA256(config.web.loginPassword)) {
+                callback();
+            } else {
+                res.status(403);
+                res.send('');
+            }
+
+        }
         e.data.web.get('/log', function (req, res) {
-            res.set("Content-Type", "text/html; charset=utf-8");
-            res.sendFile(process.cwd() + '/lib/log.txt');
+            requireAuth(req,res,() => {
+                res.set("Content-Type", "text/html; charset=utf-8");
+                res.sendFile(process.cwd() + '/lib/log.txt');
+            });
         });
         e.data.web.get('/debugmsg', function (req,res) {
-            tc.log(`[${tc.getTimestamp(new Date())}] <lucsoft.webServer | \x1b[33mINFO\x1b[0m > Hello World! This is a Debug Message`);
-           res.send("done"); 
+            requireAuth(req,res,() => {
+                tc.log(`[${tc.getTimestamp(new Date())}] <lucsoft.webServer | \x1b[33mINFO\x1b[0m > Hello World! This is a Debug Message`);
+                res.send("done"); 
+            });
         });
-        e.data.web.get('/error', function (req,res) {
-           res.send(gatedata); 
+        e.data.web.get('/modules', function (req,res) {
+            requireAuth(req,res,() => {
+                res.send(tc.getJson(mmanager.modules)); 
+            });
         });
         
-        e.data.web.get('/data', function (req,res) {
-            res.send(req);
-        })
         e.data.web.get('/restart', function (req, res) {
-            res.send("Restarting HomeSYS now...");
-                
-            cmdMan.control.eval("systemctl restart homesys.service", (x,y,z) => {
-                
+            requireAuth(req,res,() => {
+                res.send("Restarting HomeSYS now...");    
+                cmdMan.control.eval("systemctl restart homesys.service", (x,y,z) => {
+                    
+                });
             });
         });
         e.data.web.post('/database.php',function (req, res) {
             if(req.body.password == tc.SHA256(config.web.loginPassword)) {
                 res.send(JSON.stringify({login:true, user: {theme: "white"}}));
-            } else {
-                res.send(JSON.stringify({login:false}));
-            }
-            if(req.query.type != null ) {
+            }else if(req.query.type != null ) {
                 res.send(JSON.stringify(req.body));
 
             }
@@ -128,61 +125,101 @@ mmanager.onReady = (e) => {
             res.send(errormsg);
         })
         e.data.startWebserver();
-    }
+    } 
 }
-var homekit,cmdMan,lamp,lamp2,fakelock,motionsensor,errormsg;
+var homekit,cmdMan,lamp,lamp2,fakelock,motionsensor,errormsg,hsys;
+
 mmanager.onModulesAllCompleted = (e) => {
     homekit = mmanager.modules.find(x => x.name == "lucsoft.HAPWrapper").data;
     cmdMan = mmanager.modules.find(x => x.name == "lucsoft.commandManager").data;
-    lamp = homekit.createLamp({
-        displayName:"Lamp",
-        serialNumber: "L1433",
-        model: "Onboard LED",
-        power: false,
-        onPower: (e) => {
-            if(e) {
-                cmdMan.control.enableLED();
-            } else {
-                cmdMan.control.disableLED();    
-            }
-        } 
-    });
-    lamp2 = homekit.createLamp({
-        displayName:"Lamp",
-        serialNumber: "L1434",
-        model: "Onboard LED",
-        power: true,
-        onPower: (e) => {
-        } 
-    });
-    
-    fakelock = homekit.createLock({
-        displayName: "Lock",
-        serialNumber: "FL1344",
-        model: "Fake Lock",
-        locked: true,
-        onLockState: (e) => {
-        } 
-    });
-    motionsensor = homekit.createMotionSensor({
-        displayName: "Motion Sensor",
-        serialNumber: "MS1344",
-        model:"HTML Based Motion Sensor",
-    });
-    
-    homekit.createSwitch({
-        displayName: "Button Test",
-        serialNumber: "GM134434",
-        model:"Button thing",
-        state: true
-    });
-    homekit.createOutlet({
-        displayName: "Outlet Test",
-        serialNumber: "Ol134434",
-        model:"SUPER SMART outlet...",
-        state: true
-    });
-    
+    hsys = mmanager.modules.find(x => x.name == "lucsoft.homeSYSWeb").data;
+    var discord = mmanager.getModule("lucsoft.DiscordClient").data;
+    discord.addCommand("checkservice", (msg,c) => {
+        var json = mmanager.modules.find(x => x.name == "lucsoft.homeSYSWeb").data.getReponse();
+        var authorizedpersons = "";
+        var rooms = "";
+        json.authorizedpersons.forEach((e) => {
+            authorizedpersons += e.nickname + "\n (" + e.id +")\n";
+        });
+        json.rooms.forEach((e) => {
+            rooms += e.name + "\n(" + e.id +")\n";
+        });
+        
+        msg.channel.send("",{embed: {
+            color: 3447003,
+            description: "Request from " + msg.author.username + " to DiscordClient",
+            author: {
+                name: msg.author.username,
+                icon_url: msg.author.avatarURL
+            },
+            title: "HomeSYS: Web Service",
+            fields: [
+                {
+                    name: "HomeSYS Config",
+                    value: `\`Name\`:  ${json.name}\n\`Authorized persons\`: ${json.authorizedpersons.length}\n\`Rooms\`: ${json.rooms.length}`,
+                    inline: false
+                },  
+                {
+                    name: "Authorized persons",
+                    value: `${authorizedpersons}`,
+                    inline: true
+                },
+                {
+                    name: "Rooms",
+                    value: `${rooms}`,
+                    inline: true
+                }
+
+            ]
+        }});
+    }, true);
+    discord.addCommand("eval", (msg,c) => {
+        msg.channel.send(eval(msg.content.replace("--eval ", "")));
+
+    },true);
+    discord.addDefaultCommands(mmanager);
+    hsys.checkIfServiceIsAvailable(() => {
+        lamp = homekit.createLamp({
+            displayName:"Lamp",
+            serialNumber: "L1433",
+            model: "Onboard LED",
+            power: false,
+            onPower: (e) => {
+                if(e) {
+                    cmdMan.control.enableLED();
+                } else {
+                    cmdMan.control.disableLED();    
+                }
+            } 
+        });
+        lamp2 = homekit.createLamp({
+            displayName:"Lamp",
+            serialNumber: "L1434",
+            model: "Onboard LED",
+            power: true,
+            onPower: (e) => {
+            } 
+        });
+        fakelock = homekit.createLock({
+            displayName: "Lock",
+            serialNumber: "FL1344",
+            model: "Fake Lock",
+            locked: true,
+            onLockState: (e) => {
+            } 
+        });
+        motionsensor = homekit.createMotionSensor({
+            displayName: "Motion Sensor",
+            serialNumber: "MS1344",
+            model:"HTML Based Motion Sensor",
+        });
+        homekit.createSwitch({
+            displayName: "Button Test",
+            serialNumber: "GM134434",
+            model:"Button thing",
+            state: true
+        });
+    });   
 };
 
 
