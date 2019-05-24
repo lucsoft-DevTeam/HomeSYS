@@ -6,9 +6,10 @@ ed.loadModule = () => {
     
 };
 ed.onOfflineMode = () => {};
+ed.onOnlineMode = () => {};
 ed.response = "";
 ed.getReponse = () => {return ed.response};
-ed.checkIfServiceIsAvailable = () => {
+ed.checkIfServiceIsAvailable = (callback) => {
     var options = {
         url: 'https://homesys.lucsoft.de/v1',
         headers: {
@@ -19,5 +20,13 @@ ed.checkIfServiceIsAvailable = () => {
     req(options,(e,r,b) => {
         ed.response = JSON.parse(b);
     });
-    
+    if (b.authentication == "granted") {
+        ed.cnsl.sendMessage("This Home is allowed to use the HomeSYS Web Service!");
+        ed.onOnlineMode();
+        callback();
+    } else {
+        ed.cnsl.sendMessage("WARNING: This Home is not allowed to use the HomeSYS Web Service! ENABLING Offline Mode");
+        ed.onOfflineMode();
+        callback();
+    }
 };

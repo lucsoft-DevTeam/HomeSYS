@@ -149,10 +149,10 @@ ed.createLamp = (settings) => {
     
     if(settings.enableBrightness) {
         light.getService(Service.Lightbulb)
-        .getService(Service.Lightbulb)
         .addCharacteristic(Characteristic.Brightness)
         .on('set', function(value, callback) {
             ed.Accessorylist.find(x => x.serialNumber == settings.serialNumber).setBrightness(value);
+            settings.onBrightness(value);
           callback();
         })
         .on('get', function(callback) {

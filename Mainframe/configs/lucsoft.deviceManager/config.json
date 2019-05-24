@@ -1,49 +1,18 @@
 {
-    "devices": [
-        {
-            "type": 1,
-            "name": "Schreibtischlampe",
-            "roomid": "2138791",
-            "defaultstate": false,
-            "id":"3472908",
-            "requires": ["lucsoft.commandManager"],
-            "stateupdate": "(e,g) => {let lscM = mmang.getModule(\"lucsoft.commandManager\").data.control;if(e){lscM.enableLED();} else {lscM.disableLED();}"
-        },
-        {
-            "type":2,
-            "name":"Deckenlampe",
-            "roomid": "2138791",
-            "defaultstate": false,
-            "id":"4238749",
-            "requires": [],
-            "stateupdate": "(e,g) => {}"
-        },
-        {
-            "type": 5,
-            "name": "Haustür",
-            "roomid":"123144",
-            "defaultstate": true,
-            "id":"3224523",
-            "requires": ["lucsoft.serialConnect"],
-            "stateupdate": "(e,g) => {}"
-        },
-        {
-            "type": 9,
-            "name":"Bewegungsmelder",
-            "roomid":"123144",
-            "defaultstate": true,
-            "id":"1235462",
-            "requires": [],
-            "stateupdate":"(e,g) => {}" 
-        },
-        {
-            "type":7,
-            "name": "PC-Strom",
-            "roomid": "2138791",
-            "defaultstate": false,
-            "id":"1234742",
-            "requires": [],
-            "stateupdate":"(e,g) => {}"
+    "devices": {
+        "ips": ["192.168.0.97"],
+        "HSM-1dsf83jjf0": {
+            "useStatusLEDbyService": true,
+            "sone": {
+                "D": {
+                    "type": 1,
+                    "enableService": true,
+                    "fade": "3",
+                    "enableBrightness": true,
+                    "mode": "OUTPUT",
+                    "name": "Schreibtischlampe"
+                }
+            }
         }
-    ]
+    }
 }

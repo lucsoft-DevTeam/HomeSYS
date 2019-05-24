@@ -7,7 +7,9 @@ tools.log = (text) => {
 tools.logerror = (e,text) => {
     tools.log(`[${tc.getTimestamp(new Date())}] <${e} | \x1b[33mERROR\x1b[0m > ${text}`);
 }
-
+tools.scale = (num, in_min, in_max, out_min, out_max) => {
+    return (num - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+};
 tools.getTimestamp = (test) => {
     return ((test.getHours() < 10) ? "0"+ test.getHours(): test.getHours()) + ":" + ((test.getMinutes() < 10) ? "0"+ test.getMinutes(): test.getMinutes()) + ":"+ ((test.getSeconds() < 10) ? "0"+ test.getSeconds(): test.getSeconds()) + ":" + ((test.getMilliseconds() < 100) ? (test.getMilliseconds() < 10) ? "00"+ test.getMilliseconds() : "0"+ test.getMilliseconds() : test.getMilliseconds())+ " " + test.getDate()+ "."+ (test.getMonth() + 1) + "." + test.getFullYear();
 };

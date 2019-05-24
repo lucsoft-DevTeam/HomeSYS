@@ -17,6 +17,24 @@ mmang.onModuleSendMesage = (e,msg) => {
 mmang.onModulesAllCompleted = () => {
 
 };
+function deleteModule(moduleName) {
+    var solvedName = require.resolve(moduleName),
+      nodeModule = require.cache[solvedName];
+    if (nodeModule) {
+      for (var i = 0; i < nodeModule.children.length; i++) {
+        var child = nodeModule.children[i];
+        deleteModule(child.filename);
+      }
+      delete require.cache[solvedName];
+    }
+  }
+mmang.closeModule = (id) => {
+    require.resolve("../modules/" + id + ".js") = null;
+    mmang.modules.find(x => x.name != id).data = null;
+    delete require.resolve("../modules/" + id + ".js");
+    delete require.cache[require.resolve("../modules/" + id + ".js")];
+    mmang.modules = mmang.modules.find(x => x.name != id);
+};
 mmang.onModulesInitialized = () => {};
 mmang.modules = [];
 mmang.getModule = (id) => {
@@ -30,12 +48,11 @@ mmang.autoLoad = () => {
             const element = f[index];
             if(element.endsWith(".js") && element != "lucsoft.Mainframe.js") {
                 try {
-                    
-                var modulee = require("../modules/" + element);
-                modulee.cnsl = {sendMessage: (msg) => mmang.onModuleSendMesage(element.slice(0,element.length - 3),msg)};
-                mmang.modules.push({name: element.slice(0,element.length - 3),disabled:false,id: index, data: modulee});
-                mmang.onModuleInitializing({name: element.slice(0,element.length - 3),id: index,version: mmang.modules[index].data.version,data: modulee});
-            
+                    var modulee = require("../modules/" + element);
+                    modulee.cnsl = {sendMessage: (msg) => mmang.onModuleSendMesage(element.slice(0,element.length - 3),msg)};
+                    modulee.getModule = (e) => mmang.getModule(e);
+                    mmang.modules.push({name: element.slice(0,element.length - 3),disabled:false,id: index, data: modulee});
+                    mmang.onModuleInitializing({name: element.slice(0,element.length - 3),id: index,version: mmang.modules[index].data.version,data: modulee});
                 } catch (errorr) {
                     mmang.errorswhilebooting = true;
                     mmang.onModuleSendMesage(element.slice(0,element.length - 3), "Failed to Init: " + errorr);
@@ -57,6 +74,7 @@ mmang.autoLoad = () => {
                     } catch (error) {
                         mmang.errorswhilebooting = true;
                         eg.disabled = true;
+                        mmang.onModuleSendMesage("lucsoft.Mainframe", error);
                         mmang.onModuleSendMesage("lucsoft.Mainframe", "Error while loading " + eg.name + "! disabling Module... (UPDATE THIS MODULE)");
                     }
                 } 

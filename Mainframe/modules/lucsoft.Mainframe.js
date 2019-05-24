@@ -21,75 +21,97 @@ tc.log(`
 `);
 try {
     
-var mmanager = require("../lib/modulemanager");
-mmanager.autoLoad();
-mmanager.onModulesInitialized = (modules, cb) => {
-    modules.forEach(e => {
-        if(e.name == "lucsoft.updateAssistent") {
-            e.data.webs = modules.find(x => x.name == "lucsoft.webServer").data; 
-            e.data.checkForUpdates(modules, () => {
-                cb();
-            });
-               
-        }
-    });
-};
-
-mmanager.onReady = (e) => {
-    
-    if(e.name == "lucsoft.webServer") {
-        e.data.web.get('/', function (req, res) {
-            res.sendFile(process.cwd() + '/lib/web/login.html');    
-        });
-        function requireAuth(req, res,callback) {
-            if(req.headers['token'] == tc.SHA256(config.web.loginPassword)) {
-                callback();
-            } else {
-                res.status(403);
-                res.send('');
-            }
-
-        }
-        e.data.web.get('/log', function (req, res) {
-            requireAuth(req,res,() => {
-                res.set("Content-Type", "text/html; charset=utf-8");
-                res.sendFile(process.cwd() + '/lib/log.txt');
-            });
-        });
-        e.data.web.get('/debugmsg', function (req,res) {
-            requireAuth(req,res,() => {
-                tc.log(`[${tc.getTimestamp(new Date())}] <lucsoft.webServer | \x1b[33mINFO\x1b[0m > Hello World! This is a Debug Message`);
-                res.send("done"); 
-            });
-        });
-        e.data.web.get('/modules', function (req,res) {
-            requireAuth(req,res,() => {
-                res.send(tc.getJson(mmanager.modules)); 
-            });
-        });
-        
-        e.data.web.get('/restart', function (req, res) {
-            requireAuth(req,res,() => {
-                res.send("Restarting HomeSYS now...");    
-                cmdMan.control.eval("systemctl restart homesys.service", (x,y,z) => {
-                    
+    var mmanager = require("../lib/modulemanager");
+    mmanager.autoLoad();
+    mmanager.onModulesInitialized = (modules, cb) => {
+        modules.forEach(e => {
+            if(e.name == "lucsoft.updateAssistent") {
+                e.data.webs = modules.find(x => x.name == "lucsoft.webServer").data; 
+                e.data.checkForUpdates(modules, () => {
+                    cb();
                 });
+            }
+        });
+    };
+    mmanager.onReady = (e) => {
+        
+        if(e.name == "lucsoft.webServer") {
+            e.data.loadDefaultPages();    
+            function requireAuth(req, res,callback) {
+                if(req.headers['token'] == tc.SHA256(config.web.loginPassword)) {
+                    callback();
+                } else {
+                    res.status(403);
+                    res.send('');
+                }
+
+            }
+            mmanager.getModule("lucsoft.deviceManager").data.addPages(e.data.web,requireAuth, () => {
+                e.data.startWebserver();
             });
-        });
-        e.data.web.post('/database.php',function (req, res) {
-            if(req.body.password == tc.SHA256(config.web.loginPassword)) {
-                res.send(JSON.stringify({login:true, user: {theme: "white"}}));
-            }else if(req.query.type != null ) {
-                res.send(JSON.stringify(req.body));
+        } 
+    }
+    mmanager.onModulesAllCompleted = (e) => {
+        homekit = mmanager.modules.find(x => x.name == "lucsoft.HAPWrapper").data;
+        cmdMan = mmanager.modules.find(x => x.name == "lucsoft.commandManager").data;
+        var discord = mmanager.getModule("lucsoft.DiscordClient").data;
+        discord.addCommand("checkservice", (msg,c) => {
+            var json = mmanager.modules.find(x => x.name == "lucsoft.homeSYSWeb").data.getReponse();
+            var authorizedpersons = "";
+            var rooms = "";
+            json.authorizedpersons.forEach((e) => {
+                authorizedpersons += e.nickname + "\n (" + e.id +")\n";
+            });
+            json.rooms.forEach((e) => {
+                rooms += e.name + "\n(" + e.id +")\n";
+            });
+            
+            msg.channel.send("",{embed: {
+                color: 3447003,
+                description: "Request from " + msg.author.username + " to DiscordClient",
+                author: {
+                    name: msg.author.username,
+                    icon_url: msg.author.avatarURL
+                },
+                title: "HomeSYS: Web Service",
+                fields: [
+                    {
+                        name: "HomeSYS Config",
+                        value: `\`Name\`:  ${json.name}\n\`Authorized persons\`: ${json.authorizedpersons.length}\n\`Rooms\`: ${json.rooms.length}`,
+                        inline: false
+                    },  
+                    {
+                        name: "Authorized persons",
+                        value: `${authorizedpersons}`,
+                        inline: true
+                    },
+                    {
+                        name: "Rooms",
+                        value: `${rooms}`,
+                        inline: true
+                    }
 
+                ]
+            }});
+        }, true);
+        discord.addCommand("eval", (msg,c) => {
+            try {
+                msg.channel.send("Response "+ eval(msg.content.replace("--eval ", "")));
+            } catch (error) {
+                msg.channel.send("Error "+ error);
             }
-            else {
-                res.send(JSON.stringify({error: true}));
-            }
-        });
+
+        },true);
+        discord.addDefaultCommands(mmanager);  
+};
+} catch (error) {
+    tc.log(error);
+}
 
 
-        e.data.web.get('/device/lamp/true', function (req,res) {
+
+/*
+ e.data.web.get('/device/lamp/true', function (req,res) {
             res.send('Changed Light');
             lamp.updatePower(true);
         })
@@ -124,61 +146,7 @@ mmanager.onReady = (e) => {
         e.data.web.get('/errormsg', function (req,res) {
             res.send(errormsg);
         })
-        e.data.startWebserver();
-    } 
-}
-var homekit,cmdMan,lamp,lamp2,fakelock,motionsensor,errormsg,hsys;
-
-mmanager.onModulesAllCompleted = (e) => {
-    homekit = mmanager.modules.find(x => x.name == "lucsoft.HAPWrapper").data;
-    cmdMan = mmanager.modules.find(x => x.name == "lucsoft.commandManager").data;
-    hsys = mmanager.modules.find(x => x.name == "lucsoft.homeSYSWeb").data;
-    var discord = mmanager.getModule("lucsoft.DiscordClient").data;
-    discord.addCommand("checkservice", (msg,c) => {
-        var json = mmanager.modules.find(x => x.name == "lucsoft.homeSYSWeb").data.getReponse();
-        var authorizedpersons = "";
-        var rooms = "";
-        json.authorizedpersons.forEach((e) => {
-            authorizedpersons += e.nickname + "\n (" + e.id +")\n";
-        });
-        json.rooms.forEach((e) => {
-            rooms += e.name + "\n(" + e.id +")\n";
-        });
-        
-        msg.channel.send("",{embed: {
-            color: 3447003,
-            description: "Request from " + msg.author.username + " to DiscordClient",
-            author: {
-                name: msg.author.username,
-                icon_url: msg.author.avatarURL
-            },
-            title: "HomeSYS: Web Service",
-            fields: [
-                {
-                    name: "HomeSYS Config",
-                    value: `\`Name\`:  ${json.name}\n\`Authorized persons\`: ${json.authorizedpersons.length}\n\`Rooms\`: ${json.rooms.length}`,
-                    inline: false
-                },  
-                {
-                    name: "Authorized persons",
-                    value: `${authorizedpersons}`,
-                    inline: true
-                },
-                {
-                    name: "Rooms",
-                    value: `${rooms}`,
-                    inline: true
-                }
-
-            ]
-        }});
-    }, true);
-    discord.addCommand("eval", (msg,c) => {
-        msg.channel.send(eval(msg.content.replace("--eval ", "")));
-
-    },true);
-    discord.addDefaultCommands(mmanager);
-    hsys.checkIfServiceIsAvailable(() => {
+hsys.checkIfServiceIsAvailable(() => {
         lamp = homekit.createLamp({
             displayName:"Lamp",
             serialNumber: "L1433",
@@ -219,10 +187,5 @@ mmanager.onModulesAllCompleted = (e) => {
             model:"Button thing",
             state: true
         });
-    });   
-};
-
-
-} catch (error) {
-    tc.log(error);
-}
+    }); 
+*/

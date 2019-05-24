@@ -5,12 +5,15 @@ var tc = require("../lib/tools");
 const Discord = require('discord.js');
 const client = new Discord.Client();
 
-
+ed.client = client;
 ed.commandList = [];
 ed.prefix = "--";
 ed.addCommand = (name,func, requiresadmin = false) => {
     ed.cnsl.sendMessage(`Added Command: ` + name);
     ed.commandList.push({name: name,func:func, requiresadmin});
+};
+ed.onClose = () => {
+    delete client;
 };
 ed.addDefaultCommands = (mmanager,private = false) => {
     ed.addCommand("help", (msg,c) => {
