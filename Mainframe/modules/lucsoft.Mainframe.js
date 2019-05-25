@@ -55,6 +55,7 @@ try {
     mmanager.onModulesAllCompleted = (e) => {
         homekit = mmanager.modules.find(x => x.name == "lucsoft.HAPWrapper").data;
         cmdMan = mmanager.modules.find(x => x.name == "lucsoft.commandManager").data;
+        /*
         var discord = mmanager.getModule("lucsoft.DiscordClient").data;
         discord.addCommand("checkservice", (msg,c) => {
             var json = mmanager.modules.find(x => x.name == "lucsoft.homeSYSWeb").data.getReponse();
@@ -103,7 +104,7 @@ try {
             }
 
         },true);
-        discord.addDefaultCommands(mmanager);  
+        discord.addDefaultCommands(mmanager);  */
 };
 } catch (error) {
     tc.log(error);
