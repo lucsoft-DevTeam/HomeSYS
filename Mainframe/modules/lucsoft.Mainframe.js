@@ -46,9 +46,10 @@ try {
                 }
 
             }
+            /*
             mmanager.getModule("lucsoft.deviceManager").data.addPages(e.data.web,requireAuth, () => {
                 e.data.startWebserver();
-            });
+            });*/
         } 
     }
     mmanager.onModulesAllCompleted = (e) => {
