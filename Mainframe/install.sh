@@ -50,6 +50,7 @@ phaseTwoMainframe() {
     wget -q https://raw.githubusercontent.com/lucsoft-DevTeam/HomeSYS/beta/Mainframe/modules/lucsoft.commandManager.js
     wget -q https://raw.githubusercontent.com/lucsoft-DevTeam/HomeSYS/beta/Mainframe/modules/lucsoft.updateAssistent.js
     wget -q https://raw.githubusercontent.com/lucsoft-DevTeam/HomeSYS/beta/Mainframe/modules/lucsoft.webServer.js
+    wget -q https://raw.githubusercontent.com/lucsoft-DevTeam/HomeSYS/beta/Mainframe/modules/lucsoft.deviceManager.js
     cd ..
     echo "Phase 3: Installing the Mainframe"
     sudo npm install > /dev/null 2>&1
