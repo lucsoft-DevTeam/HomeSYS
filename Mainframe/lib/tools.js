@@ -1,7 +1,7 @@
 var tools = module.exports = {};
 var fs = require("fs");
 tools.log = (text) => {
-    fs.appendFileSync( process.cwd() + "/lib/log.txt", text.replace(/\n/g, "<br>").replace("[33m", "").replace("[0m ", "").replace(/\s/g, "&nbsp;").replace("<", "&lt;").replace(">", "&gt;").replace("&lt;br&gt;", "") + "<br>");
+   fs.appendFileSync( process.cwd() + "/lib/log.txt", text.replace(/\n/g, "<br>").replace("[33m", "").replace("[0m ", "").replace(/\s/g, "&nbsp;").replace("<", "&lt;").replace(">", "&gt;").replace("&lt;br&gt;", "") + "<br>");
     console.log(text);
 }
 tools.logerror = (e,text) => {

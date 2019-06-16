@@ -3,6 +3,7 @@
 */
 var fs = require("fs");
 fs.writeFileSync(process.cwd() + "/lib/log.txt", "");
+
 var config = require("../lib/config");
 var tc = require("../lib/tools");
 tc.log(`
@@ -34,7 +35,7 @@ try {
         });
     };
     mmanager.onReady = (e) => {
-        
+        if(e == undefined) return;
         if(e.name == "lucsoft.webServer") {
             e.data.loadDefaultPages();    
             function requireAuth(req, res,callback) {
@@ -46,66 +47,64 @@ try {
                 }
 
             }
-            /*
             mmanager.getModule("lucsoft.deviceManager").data.addPages(e.data.web,requireAuth, () => {
                 e.data.startWebserver();
-            });*/
-        } 
+            });
+        } else if(e.name == "lucsoft.DiscordClient") {
+            var discord = e.data;
+            
+            discord.addCommand("checkservice", (msg,c) => {
+                var json = mmanager.modules.find(x => x.name == "lucsoft.homeSYSWeb").data.getReponse();
+                var authorizedpersons = "";
+                var rooms = "";
+                json.authorizedpersons.forEach((e) => {
+                    authorizedpersons += e.nickname + "\n (" + e.id +")\n";
+                });
+                json.rooms.forEach((e) => {
+                    rooms += e.name + "\n(" + e.id +")\n";
+                });
+                
+                msg.channel.send("",{embed: {
+                    color: 3447003,
+                    description: "Request from " + msg.author.username + " to DiscordClient",
+                    author: {
+                        name: msg.author.username,
+                        icon_url: msg.author.avatarURL
+                    },
+                    title: "HomeSYS: Web Service",
+                    fields: [
+                        {
+                            name: "HomeSYS Config",
+                            value: `\`Name\`:  ${json.name}\n\`Authorized persons\`: ${json.authorizedpersons.length}\n\`Rooms\`: ${json.rooms.length}`,
+                            inline: false
+                        },  
+                        {
+                            name: "Authorized persons",
+                            value: `${authorizedpersons}`,
+                            inline: true
+                        },
+                        {
+                            name: "Rooms",
+                            value: `${rooms}`,
+                            inline: true
+                        }
+    
+                    ]
+                }});
+            }, true);
+            discord.addCommand("eval", (msg,c,e) => {
+                try {
+                    eval(msg.content.replace("--eval ", ""));
+                } catch (error) {
+                    e.error(error);
+                }
+    
+            },true);
+            discord.addDefaultCommands(mmanager);  
+        }
     }
     mmanager.onModulesAllCompleted = (e) => {
-        homekit = mmanager.modules.find(x => x.name == "lucsoft.HAPWrapper").data;
-        cmdMan = mmanager.modules.find(x => x.name == "lucsoft.commandManager").data;
-        /*
-        var discord = mmanager.getModule("lucsoft.DiscordClient").data;
-        discord.addCommand("checkservice", (msg,c) => {
-            var json = mmanager.modules.find(x => x.name == "lucsoft.homeSYSWeb").data.getReponse();
-            var authorizedpersons = "";
-            var rooms = "";
-            json.authorizedpersons.forEach((e) => {
-                authorizedpersons += e.nickname + "\n (" + e.id +")\n";
-            });
-            json.rooms.forEach((e) => {
-                rooms += e.name + "\n(" + e.id +")\n";
-            });
-            
-            msg.channel.send("",{embed: {
-                color: 3447003,
-                description: "Request from " + msg.author.username + " to DiscordClient",
-                author: {
-                    name: msg.author.username,
-                    icon_url: msg.author.avatarURL
-                },
-                title: "HomeSYS: Web Service",
-                fields: [
-                    {
-                        name: "HomeSYS Config",
-                        value: `\`Name\`:  ${json.name}\n\`Authorized persons\`: ${json.authorizedpersons.length}\n\`Rooms\`: ${json.rooms.length}`,
-                        inline: false
-                    },  
-                    {
-                        name: "Authorized persons",
-                        value: `${authorizedpersons}`,
-                        inline: true
-                    },
-                    {
-                        name: "Rooms",
-                        value: `${rooms}`,
-                        inline: true
-                    }
-
-                ]
-            }});
-        }, true);
-        discord.addCommand("eval", (msg,c) => {
-            try {
-                msg.channel.send("Response "+ eval(msg.content.replace("--eval ", "")));
-            } catch (error) {
-                msg.channel.send("Error "+ error);
-            }
-
-        },true);
-        discord.addDefaultCommands(mmanager);  */
-};
+    };
 } catch (error) {
     tc.log(error);
 }

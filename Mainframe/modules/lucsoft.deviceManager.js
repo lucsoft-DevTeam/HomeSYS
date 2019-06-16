@@ -1,10 +1,12 @@
 var ed = module.exports = {};
 ed.version = "0.1.0";
+ed.name = "DeviceManager";
+ed.icon = false;
+
 var req = require('request');
 var config = require("../lib/config");
 var tc = require("../lib/tools");
 ed.loadModule = () => {
-    ed.cnsl.sendMessage("Hello World!");
     ed.loadedConfig = require('../configs/lucsoft.deviceManager/config.json');
     ed.web = ed.getModule("lucsoft.webServer").data;
     ed.homekit = ed.getModule("lucsoft.HAPWrapper").data;
@@ -26,7 +28,7 @@ ed.knownTypes = [];
 ed.addPages = (web,requireAuth,callback) => {
     web.get("/device/connected", function (req,res) {
         requireAuth(req,res,() => {
-            res.send(200,tc.getJson(ed.devices));
+            res.status(200).send(tc.getJson(ed.devices));
         });
     })
     web.get("/device/online", function (req,res) {
@@ -38,15 +40,15 @@ ed.addPages = (web,requireAuth,callback) => {
                     ed.addDevice(e.serialNumber,e.firmware, ip);
                 }, true);
             }, 5000);
-            res.send(200,'Connected');
+            res.status(200).send('Connected');
         } else if(ed.knownTypes.includes(req.query.type)) {
             ed.cnsl.sendMessage("Autoconnect: " + req.query.type + " Connection from " + req.connection.remoteAddress.split(":ffff:")[1]); 
         
-            res.send(200,'Connected');
+            res.status(200).send('Connected');
         } else {
             ed.cnsl.sendMessage("Autoconnect: Untrusted Connection from " + req.connection.remoteAddress.split(":ffff:")[1]); 
         
-            res.send(403,'Forbidden');
+            res.status(403).send('Forbidden');
         }
     });
     callback();

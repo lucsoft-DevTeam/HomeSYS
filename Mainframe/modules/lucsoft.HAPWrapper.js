@@ -1,14 +1,23 @@
 var ed = module.exports = {};
 ed.version = "0.1.0";
+ed.name = "HAPWrapper";
+ed.icon = false;
+
 var fs = require('fs');
 var path = require('path');
 var config = require("../lib/config");
-var storage = require('node-persist');
-var uuid = require('hap-nodejs').uuid;
-var Bridge = require('hap-nodejs').Bridge;
-var Accessory = require('hap-nodejs').Accessory;
-var Service = require('hap-nodejs').Service;
-var Characteristic = require('hap-nodejs').Characteristic;
+try {
+    var storage = require('node-persist');
+    var uuid = require('hap-nodejs').uuid;
+    var Bridge = require('hap-nodejs').Bridge;
+    var Accessory = require('hap-nodejs').Accessory;
+    var Service = require('hap-nodejs').Service;
+    var Characteristic = require('hap-nodejs').Characteristic;    
+} catch (error) {
+    console.error();
+    throw ("Error while loading libraries: delete node_modules and run npm install as root");
+}
+
 var bridge;
 ed.Accessorylist = [];
 ed.createLock = (settings) => {

@@ -1,15 +1,17 @@
 var ed = module.exports = {};
 ed.version = "0.1.0";
+ed.name = "HomeSYSWeb";
+ed.icon = false;
+
 var req = require('request');
 var config = require("../lib/config");
 ed.loadModule = () => {
     
 };
 ed.onOfflineMode = () => {};
-ed.onOnlineMode = () => {};
 ed.response = "";
 ed.getReponse = () => {return ed.response};
-ed.checkIfServiceIsAvailable = (callback) => {
+ed.checkIfServiceIsAvailable = () => {
     var options = {
         url: 'https://homesys.lucsoft.de/v1',
         headers: {
@@ -20,13 +22,23 @@ ed.checkIfServiceIsAvailable = (callback) => {
     req(options,(e,r,b) => {
         ed.response = JSON.parse(b);
     });
-    if (b.authentication == "granted") {
-        ed.cnsl.sendMessage("This Home is allowed to use the HomeSYS Web Service!");
-        ed.onOnlineMode();
-        callback();
-    } else {
-        ed.cnsl.sendMessage("WARNING: This Home is not allowed to use the HomeSYS Web Service! ENABLING Offline Mode");
-        ed.onOfflineMode();
-        callback();
-    }
+    
+};
+ed.service = {};
+ed.service.getModule = (name,cb) => {
+    var options = {
+        url: 'https://homesys.lucsoft.de/v1/store.php?name=' + name,
+        headers: {
+          'token': config.web.apiKey
+          }
+        };
+    
+    req(options,(e,r,b) => {
+        try {
+            cb(JSON.parse(b));
+        } catch (error) {
+            cb(b);
+        }
+    });
+
 };
