@@ -50,6 +50,7 @@ phaseTwoMainframe() {
     wget -q https://raw.githubusercontent.com/lucsoft-DevTeam/HomeSYS/beta/Mainframe/modules/lucsoft.commandManager.js
     wget -q https://raw.githubusercontent.com/lucsoft-DevTeam/HomeSYS/beta/Mainframe/modules/lucsoft.updateAssistent.js
     wget -q https://raw.githubusercontent.com/lucsoft-DevTeam/HomeSYS/beta/Mainframe/modules/lucsoft.webServer.js
+    wget -q https://raw.githubusercontent.com/lucsoft-DevTeam/HomeSYS/beta/Mainframe/modules/lucsoft.deviceManager.js
     cd ..
     echo "Phase 3: Installing the Mainframe"
     sudo npm install > /dev/null 2>&1
@@ -61,7 +62,8 @@ phaseThreeServiceInstall() {
     wget -q https://raw.githubusercontent.com/lucsoft-DevTeam/HomeSYS/testing/Mainframe/homesys.service
     echo "Phase 4: Starting the Mainframe Service"
     systemctl enable homesys.service
-    systemctl start homesys.service
-    echo "Phase 5: Connect to the Server via Browser"
+    hostname homesys
+    echo "Phase 5: Restarting..."
+    shutdown -h now
 }
 phaseOneNodeJS
