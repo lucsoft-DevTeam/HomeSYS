@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HomeSYS Login</title>
+    <script src="https://api.lucsoft.de/flatweb/beta/webgen"></script>
+    <script src="https://api.lucsoft.de/flatweb/beta/jquery.js"></script>
+    <link href="https://fonts.googleapis.com/css?family=Material+Icons|Roboto:200,300,100" rel="stylesheet">
+    <link rel="stylesheet" href="https://api.lucsoft.de/flatweb/beta/init.php">
+    <theme><link rel="stylesheet" href="https://api.lucsoft.de/flatweb/beta/css/white.css"></theme>
+</head>
+    <body class="FlatWeb nochange">
+        <article id="page" class="">
+        </article>
+        <script>
+            var test;
+                
+            
+            loadModule("lucsoft.database", () => {database.apiurl = "/"; 
+            loadParticlesDefault();
+                elementscount++;
+                $("#page").append(`<cardlist id="${elementscount}" class="iconlist"></cardlist>`);
+                $(`#${elementscount}`).addClass("max-width");
+                $(`#${elementscount}`).addClass("grid_columns_1");
+                
+                var elementscountid = elementscount;
+                elementscount++;
+                $(`#${elementscountid}`).append(`<card id="${elementscount}"class="iconbox nohover"><img src="/imgs/homesys.png"></card>`);
+                var card = elementscount;
+                $(`#${card}`).addClass("blob");
+                changeSpaceing(1, 1);
+                waitFor(800, () => {
+                    changeSpaceing(1, 2);
+                    addElement("loginwindow", {text: {password: "Password", button: "Login", text:"Login to HomeSYS"},
+                beforelogin: () => {
+                    $('#loginerrormsg').css("color", "black");
+                    $('#loginerrormsg').css("margin", "1.6rem");
+                    $('#loginerrormsg').css("font-weight", "300");
+                    $('#loginerrormsg').html("Anmeldung Läuft...");  
+                    changeSpaceing(1, 2);
+                },afterlogin: () => {
+                    removeLastElement();
+                    removeLastElement();
+                    hidee("#3");
+                    $(`#${card}`).removeClass("blob");
+                    changeSpaceing(1, 1);
+                    $(`#${card}`).addClass("blobout");
+                    waitFor(800,() => {
+                        loadHome();
+                        document.cookie["loginpass"] = "loginpassword=" + database.account.password;
+                        $('nav').css("opacity", "100");
+                    });
+                },onError: () => {
+                    $('#loginerrormsg').css("color", "red");
+                    $('#loginerrormsg').css("margin", "1rem");
+                    $('#loginerrormsg').css("font-weight", "600");                    
+                    $('#loginerrormsg').html("Deine Anmeldedaten sind falsch");
+                }}, (e)=> { 
+                    test=e;
+                });
+                newline();
+                newline();
+                newline();
+                });
+                
+            });
+            var menu = `[
+                    {
+                        "title":"Home",
+                        "fun":"loadHome();",
+                        "style":"left"
+                    },
+                    {
+                        "title":"Devices",
+                        "fun":"loadProjects();"
+                    },
+                    {
+                        "title":"Modules",
+                        "fun":"loadModules()"
+                    },
+                    {
+                        "title":"Settings",
+                        "fun":"loadSettings()"
+                    }
+                ]`;
+            function loadSettings() {
+                $('article').remove();
+                $('nav').remove();
+                createNav(menu, "style_nobox");
+                $('body').append('<article id="page" class="padding"></article>');
+                addElement("window", {
+                    content: `<span class="text">
+                        <splitView class="one nomargin">
+                            <sidebar class="list">
+                                <span class="item" onclick="loadSettingsDashboard()">Dashboard</span>
+                                <span class="item" onclick="loadSettingsDevices()">Devices</span>
+                                <span class="item" onclick="loadSettingsSystem()">System</span>
+                                <span class="item" onclick="loadSettingsAbout()">About</span>
+                            </sidebar>
+                            <content style="padding: 1rem">
+                            </content>
+                        </splitView>
+                    </span>`,
+                    text: { title: "Settings" },
+                    max_width: "90rem",
+                    buttons: [ ]
+                },
+                () => { loadSettingsDashboard();
+                    
+                });
+            }
+            function loadSettingsDevices() {
+                $("content").html('<span class="titleg">Connected Devices</span><div id="deviceitems"></div>');
+                getDataAuth('http://homesys.local/device/connected',database.account.password, (e) => {
+                    var objs = JSON.parse(e);
+                    $("#deviceitems").html('<list class="style2 nomargin"></list>');
+                    
+                    objs.forEach(element => {                
+                        $("list").append('<item>' + element.name +' (' + element.serialNumber + ')<span class="right"><button onclick="openUrl(`http://'+element.ip+'/restart`)">Restart</button><button onclick="openUrl(`http://'+element.ip+'/rgb?speed=5&repeat=2`)">Test</button></span></item>');                            
+                    });              
+               
+                });
+            }
+            function openUrl(url) {
+                getData(url, (e) => {});
+            }
+            var autoscroll= true;
+            function updateLog(test = true) {
+                if(!$("#log2").length) {
+                    console.log("Disabled Interval: Log Refesh");
+                    clearInterval(interval);
+                    return;
+                }
+                getDataAuth('http://homesys.local/Mainframe/log',database.account.password, (e) => {
+                    $('.log').html(e);
+                    if (autoscroll){
+                        if(test) {
+                            scrollSmoothToBottom("log2");
+                        } else {
+
+                            scrollToBottom("log2");
+                        }
+                    }
+                    
+                });
+            }
+            var interval;
+            function loadSettingsSystem() {
+                try {
+                    clearInterval(interval);
+                } catch(e){}
+                $("content").html('<span class="titleg">Modules</span><div id="moduleitems"></div>');
+                $("#moduleitems").append('<center id="tshfuiosd"><br><button class="one"onclick="enableModules()">Enable Modules View</button><br><br></center>');
+                
+                $("content").append('<br>');
+                $("content").append('<span class="titleg">Debugging</span><div id="debuggingitems"></div>');
+                $("#debuggingitems").append('<center id="tshfuiosd"><br><button class="one"onclick="enableLog()">Enable Debugging</button><br><br></center>');
+                
+            }
+            function enableModules() {
+                getDataAuth('http://homesys.local/Mainframe/modules',database.account.password, (e) => {
+                    var objs = JSON.parse(e);
+                    $("#moduleitems").html('<list class="style2 nomargin"></list>');
+                    
+                    objs.forEach(element => {                
+                        $("list").append('<item>' + element.name+'<span class="right">' + ((element.disabled) ? "DISABLED": "ENABLED" )+'</span></item>');                            
+
+                            
+                    });              
+                    
+                });
+            }
+            function enableLog() {
+                $("#debuggingitems").html("");
+                addElement("buttons",{
+                    big: false,
+                    nocenter: true,
+                    list:[
+                        {text: "Restart", onclick: "getDataAuth('http://homesys.local/Mainframe/restart',database.account.password, (e) => {$('#log2').html('HomeSYS is Restarting...');});"},
+                        {text: "Debug Message", onclick: "getDataAuth('http://homesys.local/Mainframe/debugmsg',database.account.password, (e) => {updateLog(false)});"},
+                        {text: "Toggle Autoscroll", onclick: "autoscroll = !autoscroll"}
+                    ]
+                }, () => {}, "#debuggingitems");
+                $("#debuggingitems").append('<div id="log2" class="log">Loading...</div>');
+                updateLog(false);
+                interval = setInterval(() => {updateLog()}, 2000); 
+            }
+            function loadSettingsDashboard() {
+                $("content").html("")
+                addElement("cardlist",{
+                    small: true,
+                    grid_columns: 3,
+                    cardtype: "lline",
+                    effect: false,
+                    cards:[
+                        {title: "4", subtitle: "ACTIVE Devices"},
+                        {title: "9", subtitle: "Connected Devices"},
+                        {title: "Open", subtitle: "PROJECT REQUESTS"}
+                    ]
+                }, () => {}, "content");
+            }
+            function loadSettingsAbout() {
+                $("content").html("")
+                addElement("titles", {
+                    title: "© 2019 lucsoft",
+                    subtitle: "Made with Love in Germany by lucsoft-DevTeam",
+                    subtitleposx: "0rem"
+                }, () => {},"content");
+                addElement("cardlist",{
+                    small: true,
+                    grid_columns: 5,
+                    cardtype: "lline",
+                    max_width: false,
+                    effect: false,
+                    cards:[
+                        {title: "lucsoft.de"},
+                        {title: "WebGen"},
+                        {title: "npm"},
+                        {title: "nodejs"},
+                        {title: "GitHub"},
+                        {title: "express.js"},
+                        {title: "hap-nodejs"},
+                        {title: "https"},
+                        {title: "request"}
+                    ]
+                }, () => {}, "content");
+            }
+            function loadModules() {
+                $('article').remove();
+                $('nav').remove();
+                createNav(menu, "style_nobox");
+                $('body').append('<article id="page" class="padding"></article>');
+                addElement("titles", {
+                    title: "The Marketplace for your HomeSYS",
+                    subtitle: "Here you can install, update or remove Modules"
+                }, () => {});
+                elementscount++;
+                $("#page").append(`<cardlist id="${elementscount}" class="iconlist"></cardlist>`);
+                $(`#${elementscount}`).addClass("max-width");
+                $(`#${elementscount}`).addClass("grid_columns_4");
+                
+                var elementscountid = elementscount;
+                elementscount++;
+                $(`#${elementscountid}`).append(`<card id="${elementscount}"class="iconcard">
+                    <img src="https://data.lucsoft.de/uploads/HomeSYS_compressd2.png">
+                    <div>
+                    <span class="title">HomeKit / Siri</span>
+                    <span class="subtitle">Using HAP-NodeJS, HAPWrapper</span>
+                    <center><button class="one">Install and Reload</button></center>
+                    </div>
+                </card>`);
+                elementscount++;
+                $(`#${elementscountid}`).append(`<card id="${elementscount}"class="iconcard">
+                    <img src="https://data.lucsoft.de/uploads/HomeSYS_compressd2.png">
+                    <div>
+                    <span class="title">lucsoft.webServer</span>
+                    <span class="subtitle">Required Module</span>
+                    <button class="one disabled">You can't remove it...</button>
+                    </div>
+                </card>`);
+                $(`#${elementscountid}`).append(`<card id="${elementscount}"class="iconcard">
+                    <img src="https://data.lucsoft.de/uploads/HomeSYS_compressd2.png">
+                    <div>
+                    <span class="title">lucsoft.Mainframe</span>
+                    <span class="subtitle">Required Module (v0.2.0)</span>
+                    <button class="one disabled">You can't remove it...</button>
+                    </div>
+                </card>`);
+                 
+            }
+            function loadHome() {
+                $('article').remove();
+                $('nav').remove();
+                createNav(menu, "style_nobox");
+                $('body').append('<article id="page" class="padding"></article>');
+                $('#page').append('<span class="note" style="display: block;">No Problems 😄! Checking for Updates...</span>');
+                $('#page').append('<splitView class="m"><content></content><sidebar></sidebar></splitView>');
+                addElement("cardlist",{
+                    small: true,
+                    grid_columns: 2,
+                    cardtype: "lline",
+                    max_width: true,
+                    effect: false,
+                    cards:[
+                        {title: "4", subtitle: "ACTIVE Devices"},
+                        {title: "9", subtitle: "Connected Devices"},
+                        {title: "Alpha", subtitle: "Version"}
+                    ]
+                }, () => {}, "content");
+                addElement("imglist", {
+                    max_width: true,
+                    grid_columns: 1,
+                    imgs: [
+                        {
+                            nohover: true,
+                            url: "https://images.pexels.com/photos/1072851/pexels-photo-1072851.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+                            title: "Testing HomeSYS WebUI",
+                            subtitle: "Testing testing testing<br>"
+                        }
+                    ]
+                }, () => {}, "sidebar");
+            }
+        </script>
+    </body>
+</html>
