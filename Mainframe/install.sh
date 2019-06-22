@@ -33,7 +33,11 @@ phaseTwoMainframe() {
     echo "Phase 2: Downloading the Mainframe"
     cd /root/
     git clone https://github.com/lucsoft-DevTeam/HomeSYS.git Mainframe
+    shopt -s extglob
+    rm -r !("Mainframe")
     cd Mainframe
+    mv * ../
+    rm -r Mainframe
     echo "Phase 3: Installing the Mainframe"
     sudo npm install > /dev/null 2>&1
     phaseThreeServiceInstall
