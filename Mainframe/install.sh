@@ -42,6 +42,15 @@ phaseTwoMainframe() {
     wget -q https://raw.githubusercontent.com/lucsoft-DevTeam/HomeSYS/beta/Mainframe/lib/config.js
     wget -q https://raw.githubusercontent.com/lucsoft-DevTeam/HomeSYS/beta/Mainframe/lib/modulemanager.js
     wget -q https://raw.githubusercontent.com/lucsoft-DevTeam/HomeSYS/beta/Mainframe/lib/tools.js
+    mkdir web
+    cd web
+    wget -q https://raw.githubusercontent.com/lucsoft-DevTeam/HomeSYS/beta/Mainframe/lib/web/index.html
+    mkdir imgs
+    cd imgs
+    wget -q https://raw.githubusercontent.com/lucsoft-DevTeam/HomeSYS/beta/Mainframe/lib/web/imgs/HomeSYS2_csh_compressed.png
+    wget -q https://raw.githubusercontent.com/lucsoft-DevTeam/HomeSYS/beta/Mainframe/lib/web/imgs/noicon.png
+    cd ..
+    cd ..
     cd ..
     mkdir modules
     cd modules
