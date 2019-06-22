@@ -1,5 +1,5 @@
 #!/bin/sh
-targetversion="v10.15.2"
+targetversion="v10.16.0"
 echo "Installing lucsofts HomeSYS:Mainframe"
 echo "We do all for you just wait..."
 echo ""
@@ -64,6 +64,6 @@ phaseThreeServiceInstall() {
     systemctl enable homesys.service
     hostname homesys
     echo "Phase 5: Restarting..."
-    shutdown -h now
+    shutdown -r now
 }
 phaseOneNodeJS

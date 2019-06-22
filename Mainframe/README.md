@@ -2,7 +2,7 @@
 
 ### Installation:
 
-    wget https://raw.githubusercontent.com/lucsoft-DevTeam/HomeSYS/beta/Mainframe/install.sh;sudo sh install.sh
+    wget http://i.homesys.lucsoft.de/install.sh;sudo sh install.sh
 
   
 ### Images

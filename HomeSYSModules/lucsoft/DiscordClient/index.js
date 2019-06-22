@@ -1,5 +1,7 @@
 var ed = module.exports = {};
 ed.version = "0.1.1";
+ed.name = "DiscordClient";
+ed.icon = "https://github.com/lucsoft-DevTeam/HomeSYS/blob/master/HomeSYSModules/lucsoft/DiscordClient/logo.png?raw=true";f
 var config = require("../lib/config");
 var tc = require("../lib/tools");
 const Discord = require('discord.js');
