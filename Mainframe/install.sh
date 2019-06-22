@@ -32,35 +32,8 @@ phaseOneNodeJS() {
 phaseTwoMainframe() {
     echo "Phase 2: Downloading the Mainframe"
     cd /root/
-    mkdir Mainframe
+    git clone https://github.com/lucsoft-DevTeam/HomeSYS.git Mainframe
     cd Mainframe
-    wget -q https://raw.githubusercontent.com/lucsoft-DevTeam/HomeSYS/beta/Mainframe/main.js
-    wget -q https://raw.githubusercontent.com/lucsoft-DevTeam/HomeSYS/beta/Mainframe/package.json
-    wget -q https://raw.githubusercontent.com/lucsoft-DevTeam/HomeSYS/beta/Mainframe/package-lock.json
-    mkdir lib
-    cd lib
-    wget -q https://raw.githubusercontent.com/lucsoft-DevTeam/HomeSYS/beta/Mainframe/lib/config.js
-    wget -q https://raw.githubusercontent.com/lucsoft-DevTeam/HomeSYS/beta/Mainframe/lib/modulemanager.js
-    wget -q https://raw.githubusercontent.com/lucsoft-DevTeam/HomeSYS/beta/Mainframe/lib/tools.js
-    mkdir web
-    cd web
-    wget -q https://raw.githubusercontent.com/lucsoft-DevTeam/HomeSYS/beta/Mainframe/lib/web/index.html
-    mkdir imgs
-    cd imgs
-    wget -q https://raw.githubusercontent.com/lucsoft-DevTeam/HomeSYS/beta/Mainframe/lib/web/imgs/HomeSYS2_csh_compressed.png
-    wget -q https://raw.githubusercontent.com/lucsoft-DevTeam/HomeSYS/beta/Mainframe/lib/web/imgs/noicon.png
-    cd ..
-    cd ..
-    cd ..
-    mkdir modules
-    cd modules
-    wget -q https://raw.githubusercontent.com/lucsoft-DevTeam/HomeSYS/beta/Mainframe/modules/lucsoft.Mainframe.js
-    wget -q https://raw.githubusercontent.com/lucsoft-DevTeam/HomeSYS/beta/Mainframe/modules/lucsoft.HAPWrapper.js
-    wget -q https://raw.githubusercontent.com/lucsoft-DevTeam/HomeSYS/beta/Mainframe/modules/lucsoft.commandManager.js
-    wget -q https://raw.githubusercontent.com/lucsoft-DevTeam/HomeSYS/beta/Mainframe/modules/lucsoft.updateAssistent.js
-    wget -q https://raw.githubusercontent.com/lucsoft-DevTeam/HomeSYS/beta/Mainframe/modules/lucsoft.webServer.js
-    wget -q https://raw.githubusercontent.com/lucsoft-DevTeam/HomeSYS/beta/Mainframe/modules/lucsoft.deviceManager.js
-    cd ..
     echo "Phase 3: Installing the Mainframe"
     sudo npm install > /dev/null 2>&1
     phaseThreeServiceInstall
