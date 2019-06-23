@@ -1,7 +1,7 @@
-var exportdata = module.exports = {};
-exportdata.version = "0.1.0";
-exportdata.name = "webServer";
-exportdata.icon = false;
+var ed = module.exports = {};
+ed.version = "0.1.0";
+ed.name = "webServer";
+ed.icon = false;
 
 
 var msg;
@@ -15,29 +15,34 @@ var fs = require('fs');
 const request = require('request');
 const bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({ extended: true }));
-exportdata.getWeb = () => {
-    return exportdata.web;
+ed.getWeb = () => {
+    return ed.web;
 };
-exportdata.web = app;
-exportdata.getHTTPS = (url, response) => {
+ed.web = app;
+ed.checkIfOnline = (cb) => {
+    https.get("https://google.com",(res) => {cb(true);}).on("error", () => {
+        cb(false);
+    });
+};
+ed.getHTTPS = (url, response) => {
     https.get(url, response);
 };
-exportdata.requestWeb = (url, response, json = false) => {
+ed.requestWeb = (url, response, json = false) => {
     request(url, { json: json }, (err, res, body) => {
         if (err) { return response(err) }
         response(body);
     });
 };
 
-exportdata.readFile = function (path) {
+ed.readFile = function (path) {
     return fs.readFileSync(path);
 }
-exportdata.readJson = function (path) {
+ed.readJson = function (path) {
     var contents = fs.readFileSync(path);
     return JSON.parse(contents);
 }
-exportdata.fs = fs;
-exportdata.downloadFile = function(url, path,cb) {
+ed.fs = fs;
+ed.downloadFile = function(url, path,cb) {
     var req = request({
         method: 'GET',
         uri: url
@@ -54,7 +59,7 @@ function requireAuth(req, res,callback) {
         res.status(403).send('');
     }
 }
-exportdata.loadDefaultPages = function () {
+ed.loadDefaultPages = function () {
     app.get('/', function (req, res) {
         res.status(200).sendFile(process.cwd() + '/lib/web/index.html');    
     });
@@ -68,7 +73,7 @@ exportdata.loadDefaultPages = function () {
     app.get('/Mainframe/restart', function (req, res) {
         requireAuth(req,res,() => {
             res.status(200).send("Restarting HomeSYS now...");    
-            exportdata.cmdmanager.control.eval("systemctl restart homesys.service", (x,y,z) => {
+            ed.cmdmanager.control.evalO("systemctl restart homesys.service", (x,y,z) => {
                 
             });
         });
@@ -90,8 +95,18 @@ exportdata.loadDefaultPages = function () {
                         res.status(200).send(body);
                     })
             }).on('error',function (e) {
-                exportdata.error(e);
+                ed.error(e);
             })
+        });
+    });
+    app.get('/Mainframe/eval', function (req, res) {
+        requireAuth(req,res,() => {
+            try {
+                ed.log(eval(req.query.command));
+            } catch (error) {
+                ed.error(error);
+            }
+            res.status(200).send(JSON.stringify({error:false}));
         });
     });
    
@@ -113,18 +128,18 @@ exportdata.loadDefaultPages = function () {
     });
     app.get('/Mainframe/debugmsg', function (req,res) {
         requireAuth(req,res,() => {
-            exportdata.log(`Hello World! This is a Debug Message`);
+            ed.log(`Hello World! This is a Debug Message`);
             res.status(200).send("done"); 
         });
     });
     app.get('/Mainframe/modules', function (req,res) {
         requireAuth(req,res,() => {
-            res.status(200).send(tc.getJson(exportdata.getModules())); 
+            res.status(200).send(tc.getJson(ed.getModules())); 
         });
     });
 
 }
-exportdata.deleteFiles = function(files, callback){
+ed.deleteFiles = function(files, callback){
 var i = files.length;
 files.forEach(function(filepath){
     fs.unlink(filepath, function(err) {
@@ -139,11 +154,11 @@ files.forEach(function(filepath){
 });
 }
 
-exportdata.loadModule = () => {
-    exportdata.cmdmanager = exportdata.getModule("lucsoft.commandManager").data;
+ed.loadModule = () => {
+    ed.cmdmanager = ed.getModule("lucsoft.commandManager").data;
 };
-exportdata.port = 80;
-exportdata.startWebserver = () => {
+ed.port = 80;
+ed.startWebserver = () => {
 app.listen(80, function () {
 
 })

@@ -32,26 +32,12 @@ phaseOneNodeJS() {
 phaseTwoMainframe() {
     echo "Phase 2: Downloading the Mainframe"
     cd /root/
-    mkdir Mainframe
+    git clone https://github.com/lucsoft-DevTeam/HomeSYS.git Mainframe
+    shopt -s extglob
+    rm -r !("Mainframe")
     cd Mainframe
-    wget -q https://raw.githubusercontent.com/lucsoft-DevTeam/HomeSYS/beta/Mainframe/main.js
-    wget -q https://raw.githubusercontent.com/lucsoft-DevTeam/HomeSYS/beta/Mainframe/package.json
-    wget -q https://raw.githubusercontent.com/lucsoft-DevTeam/HomeSYS/beta/Mainframe/package-lock.json
-    mkdir lib
-    cd lib
-    wget -q https://raw.githubusercontent.com/lucsoft-DevTeam/HomeSYS/beta/Mainframe/lib/config.js
-    wget -q https://raw.githubusercontent.com/lucsoft-DevTeam/HomeSYS/beta/Mainframe/lib/modulemanager.js
-    wget -q https://raw.githubusercontent.com/lucsoft-DevTeam/HomeSYS/beta/Mainframe/lib/tools.js
-    cd ..
-    mkdir modules
-    cd modules
-    wget -q https://raw.githubusercontent.com/lucsoft-DevTeam/HomeSYS/beta/Mainframe/modules/lucsoft.Mainframe.js
-    wget -q https://raw.githubusercontent.com/lucsoft-DevTeam/HomeSYS/beta/Mainframe/modules/lucsoft.HAPWrapper.js
-    wget -q https://raw.githubusercontent.com/lucsoft-DevTeam/HomeSYS/beta/Mainframe/modules/lucsoft.commandManager.js
-    wget -q https://raw.githubusercontent.com/lucsoft-DevTeam/HomeSYS/beta/Mainframe/modules/lucsoft.updateAssistent.js
-    wget -q https://raw.githubusercontent.com/lucsoft-DevTeam/HomeSYS/beta/Mainframe/modules/lucsoft.webServer.js
-    wget -q https://raw.githubusercontent.com/lucsoft-DevTeam/HomeSYS/beta/Mainframe/modules/lucsoft.deviceManager.js
-    cd ..
+    mv * ../
+    rm -r Mainframe
     echo "Phase 3: Installing the Mainframe"
     sudo npm install > /dev/null 2>&1
     phaseThreeServiceInstall

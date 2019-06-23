@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HomeSYS Login</title>
+    <title>HomeSYS</title>
     <script src="https://api.lucsoft.de/flatweb/beta/webgen"></script>
     <script src="https://api.lucsoft.de/flatweb/beta/jquery.js"></script>
     <link href="https://fonts.googleapis.com/css?family=Material+Icons|Roboto:200,300,100" rel="stylesheet">
@@ -15,7 +15,7 @@
         </article>
         <script>
             var test;
-                
+            var ele = {titlew: "titlew",cardlist:"cardlist", imagelist:"imagelist",linebreak:"linebreak",titles:"titles",searchbox:"searchbox",buttons:"buttons", loginwindow:"loginwindow",window:"window", imglist:"imglist",applist:"applist"};
             
             loadModule("lucsoft.database", () => {database.apiurl = "/"; 
             loadParticlesDefault();
@@ -30,7 +30,7 @@
                 var card = elementscount;
                 $(`#${card}`).addClass("blob");
                 changeSpaceing(1, 1);
-                waitFor(800, () => {
+                waitFor(300, () => {
                     changeSpaceing(1, 2);
                     addElement("loginwindow", {text: {password: "Password", button: "Login", text:"Login to HomeSYS"},
                 beforelogin: () => {
@@ -50,6 +50,7 @@
                         loadHome();
                         document.cookie["loginpass"] = "loginpassword=" + database.account.password;
                         $('nav').css("opacity", "100");
+                        
                     });
                 },onError: () => {
                     $('#loginerrormsg').css("color", "red");
@@ -73,7 +74,7 @@
                     },
                     {
                         "title":"Devices",
-                        "fun":"loadProjects();"
+                        "fun":"loadDevices();"
                     },
                     {
                         "title":"Modules",
@@ -89,7 +90,7 @@
                 $('nav').remove();
                 createNav(menu, "style_nobox");
                 $('body').append('<article id="page" class="padding"></article>');
-                addElement("window", {
+                addElement(ele.window, {
                     content: `<span class="text">
                         <splitView class="one nomargin">
                             <sidebar class="list">
@@ -112,7 +113,7 @@
             }
             function loadSettingsDevices() {
                 $("content").html('<span class="titleg">Connected Devices</span><div id="deviceitems"></div>');
-                getDataAuth('http://homesys.local/device/connected',database.account.password, (e) => {
+                getDataAuth('http://' + window.location.hostname + '/device/connected',database.account.password, (e) => {
                     var objs = JSON.parse(e);
                     $("#deviceitems").html('<list class="style2 nomargin"></list>');
                     
@@ -132,13 +133,12 @@
                     clearInterval(interval);
                     return;
                 }
-                getDataAuth('http://homesys.local/Mainframe/log',database.account.password, (e) => {
+                getDataAuth('http://' + window.location.hostname + '/Mainframe/log',database.account.password, (e) => {
                     $('.log').html(e);
                     if (autoscroll){
                         if(test) {
                             scrollSmoothToBottom("log2");
                         } else {
-
                             scrollToBottom("log2");
                         }
                     }
@@ -159,30 +159,27 @@
                 
             }
             function enableModules() {
-                getDataAuth('http://homesys.local/Mainframe/modules',database.account.password, (e) => {
+                getDataAuth('http://' + window.location.hostname + '/Mainframe/modules',database.account.password, (e) => {
                     var objs = JSON.parse(e);
                     $("#moduleitems").html('<list class="style2 nomargin"></list>');
-                    
                     objs.forEach(element => {                
-                        $("list").append('<item>' + element.name+'<span class="right">' + ((element.disabled) ? "DISABLED": "ENABLED" )+'</span></item>');                            
-
-                            
+                        $("list").append('<item>' + element.name+'<span class="right">' + ((element.disabled) ? "DISABLED": "ENABLED" )+'</span></item>');                                  
                     });              
-                    
                 });
             }
             function enableLog() {
                 $("#debuggingitems").html("");
-                addElement("buttons",{
+                addElement(ele.buttons,{
                     big: false,
                     nocenter: true,
                     list:[
-                        {text: "Restart", onclick: "getDataAuth('http://homesys.local/Mainframe/restart',database.account.password, (e) => {$('#log2').html('HomeSYS is Restarting...');});"},
-                        {text: "Debug Message", onclick: "getDataAuth('http://homesys.local/Mainframe/debugmsg',database.account.password, (e) => {updateLog(false)});"},
+                        {text: "Restart", onclick: "getDataAuth('http://" + window.location.hostname + "/Mainframe/restart',database.account.password, (e) => {$('#log2').html('HomeSYS is Restarting...');});"},
+                        {text: "Debug Message", onclick: "getDataAuth('http://" + window.location.hostname + "/Mainframe/debugmsg',database.account.password, (e) => {updateLog(false)});"},
                         {text: "Toggle Autoscroll", onclick: "autoscroll = !autoscroll"}
                     ]
                 }, () => {}, "#debuggingitems");
                 $("#debuggingitems").append('<div id="log2" class="log">Loading...</div>');
+                $("#debuggingitems").append('<list class="two"><input class="custom" id="evalinput" type="text"><button class="one" style="width:auto;display:inline;"onclick="getDataAuth(\'http://homesys.local/Mainframe/eval?command=\'+ $(\'#evalinput\').val(),database.account.password, (e) => {$(\'#evalinput\').val(\'\')});">Run</button></list>');
                 updateLog(false);
                 interval = setInterval(() => {updateLog()}, 2000); 
             }
@@ -202,7 +199,7 @@
             }
             function loadSettingsAbout() {
                 $("content").html("")
-                addElement("titles", {
+                addElement(ele.titles, {
                     title: "© 2019 lucsoft",
                     subtitle: "Made with Love in Germany by lucsoft-DevTeam",
                     subtitleposx: "0rem"
@@ -226,6 +223,42 @@
                     ]
                 }, () => {}, "content");
             }
+            function loadDevices() {
+                $('article').remove();
+                $('nav').remove();
+                createNav(menu, "style_nobox");
+                $('body').append('<article id="page" class="padding"></article>');
+                addElement(ele.buttons,{
+                    big: true,
+                    list:[
+                        {text: "Turn Everything off", onclick: ""},
+                        {text: "Turn Everything on", onclick: ""},
+                        {text: "Turn on Schreibtisch", onclick: ""}
+                    ]
+                }, () => {});
+
+                addLayout("connectedDevices");
+                addElement("titles", {
+                    title: "Connected Devices",
+                    subtitle: "Here you can see all Devices"
+                }, () => {},"#connectedDevices");
+                addElement("cardlist",{
+                    small: true,
+                    grid_columns: "auto",
+                    cards:[
+                        {title: "Loading..."},
+                        {title: "Loading..."},
+                        {title: "Loading..."}
+                    ]
+                }, () => {},"#connectedDevices");
+                getDataAuth('http://' + window.location.hostname + '/device/connected',database.account.password, (e) => {
+                    var objs = JSON.parse(e); 
+                    console.log(objs);
+                });
+                setInterval(() => {
+                   
+                }, 1000);
+            }
             function loadModules() {
                 $('article').remove();
                 $('nav').remove();
@@ -235,10 +268,82 @@
                     title: "The Marketplace for your HomeSYS",
                     subtitle: "Here you can install, update or remove Modules"
                 }, () => {});
-                elementscount++;
+                addElement("cardlist",{
+                    small: true,
+                    grid_columns: "auto",
+                    cards:[
+                        {title: "Loading..."},
+                        {title: "Loading..."},
+                        {title: "Loading..."}
+                    ]
+                }, () => {});
+                getDataAuth('http://' + window.location.hostname + '/Mainframe/store/trending',database.account.password, (e) => {
+                    var objs = JSON.parse(e);
+                    if(objs.authentication == "granted") {
+                        removeLastElement();
+                        var trendy = [];
+                        var installed  = [];
+                        objs.modules.forEach(modl => {
+                            trendy.push({title: modl.name, subtitle: modl.id + " | " + modl.version, img: modl.icon == false ? '/imgs/noicon.png' : modl.icon,disabled: modl.disabled,button: installed.indexOf(modl.id) != -1 ? "Uninstall" : "Install"});
+                        });
+                        addElement(ele.applist,{
+                            grid_columns: "auto",
+                            max_width: true,
+                            app:trendy
+                        }, () => {});
+                    } else {
+                        $('#page').html("");
+                        addElement("titlew", {
+                            title: "403 Forbidden",
+                            subtitle: "You dont have Permissions to Access the Store",
+                            subtitleposx: "0"
+                        }, () => {});
+                    }
+                    getDataAuth('http://' + window.location.hostname + '/Mainframe/modules',database.account.password, (e) => {
+                        var json = JSON.parse(e);
+                        var modules = [];
+                        json.forEach(modl => {
+                            if(modl['icon'] != undefined) {
+                                modules.push({title: modl.name, subtitle: modl.id + " | " + modl.version, img: modl.icon == false ? '/imgs/noicon.png' : modl.icon,disabled: true,button: "Uninstall"});
+                            } else {
+                                modules.push({title: modl.name, subtitle: modl.name + " | " + "No Version" , img: '/imgs/noicon.png' ,button: "Uninstall"});
+                            
+                            }
+                                
+                        });
+                        newline();
+                        newline();
+                        newline();
+                        addElement("titles", {
+                           title:"Active Modules"
+                        }, () => {});
+                        addElement(ele.applist,{
+                            grid_columns: "auto",
+                            max_width: true,
+                            app:modules
+                        }, () => {});     
+                        newline();
+                        newline();
+                        newline();      
+                    });
+                });
+                
+               /* addElement("searchbox",{
+                    searchtext:"Search for a Module",
+                    index: [{name: ["lucsoft.DiscordClient","v0.1.2"],id:"lucsoft.DiscordClient",street:"2 Installations"}],
+                    error: {
+                        notfound: "Not Found"
+                    }, onsearch: () => {
+                        godown(false);
+                    }, onclose:() => {
+                        loadModules();
+                    }
+                },(e) => { e.input.focus();});
+                newline();
+               /* elementscount++;
                 $("#page").append(`<cardlist id="${elementscount}" class="iconlist"></cardlist>`);
                 $(`#${elementscount}`).addClass("max-width");
-                $(`#${elementscount}`).addClass("grid_columns_4");
+                $(`#${elementscount}`).addClass("grid_columns_auto");
                 
                 var elementscountid = elementscount;
                 elementscount++;
@@ -267,7 +372,7 @@
                     <button class="one disabled">You can't remove it...</button>
                     </div>
                 </card>`);
-                 
+                 */
             }
             function loadHome() {
                 $('article').remove();

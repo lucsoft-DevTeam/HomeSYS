@@ -31,6 +31,16 @@ ed.addPages = (web,requireAuth,callback) => {
             res.status(200).send(tc.getJson(ed.devices));
         });
     })
+    web.get("/device/control", function (req,res) {
+        requireAuth(req,res,() => {
+            var device = ed.devices.filter(x => x.serialNumber == req.query.serialNumber);
+            if(device.length == 1 ) {
+                ed.web.requestWeb("http://" + device.ip + "/" + req.query.command,(e) => {
+                    res.status(200).send(e);
+                }, true);
+            }
+        });
+    })
     web.get("/device/online", function (req,res) {
         if(req.query.type == "HSM" ) {
             ed.cnsl.sendMessage("Autoconnect: HomeSYS-Module Connection from " + req.connection.remoteAddress.split(":ffff:")[1]); 
