@@ -28,9 +28,12 @@ try {
         modules.forEach(e => {
             if(e.name == "lucsoft.updateAssistent") {
                 e.data.webs = modules.find(x => x.name == "lucsoft.webServer").data; 
-                e.data.checkForUpdates(modules, () => {
-                    cb();
-                });
+                e.data.waitForInternet(() => {
+                    e.data.checkForUpdates(modules, () => {
+                        cb();
+                    });
+                })
+                
             }
         });
     };

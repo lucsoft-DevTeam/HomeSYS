@@ -22,6 +22,16 @@ ed.checkForUpdates = (modules,cb) => {
         ed.error("Check for Internet Connection"); 
     }
 };
+ed.waitForInternet = (cb) => {
+    var loopOnlineCheck = setInterval(() => {
+        ed.webs.checkIfOnline((e) => {
+            if(e == true) {
+                cb();
+                clearInterval(loopOnlineCheck);
+            }
+        });
+    }, 1000);
+};
 ed.installModule = (modulename,cb) => {
     ed.service.getModule(modulename,cb);
 };
