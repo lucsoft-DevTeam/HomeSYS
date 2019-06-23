@@ -16,7 +16,7 @@ phaseOneNodeJS() {
     then
         nodeversion=`node -v`
         if [ "$nodeversion" = "$targetversion" ]; then
-            echo "Phase 1: NodeJS is Okay"
+            echo "Phase 1.1: NodeJS is Okay"
             phaseTwoMainframe
         else 
             echo "Phase 1.1: Changing NodeJS's Version..."
@@ -45,7 +45,7 @@ phaseTwoMainframe() {
 phaseThreeServiceInstall() {
     echo "Phase 3: Installing the Mainframe Service"
     cd /etc/systemd/system/
-    wget -q https://raw.githubusercontent.com/lucsoft-DevTeam/HomeSYS/testing/Mainframe/homesys.service
+    wget -q https://raw.githubusercontent.com/lucsoft-DevTeam/HomeSYS/master/Mainframe/homesys.service
     echo "Phase 4: Starting the Mainframe Service"
     systemctl enable homesys.service
     hostname homesys
