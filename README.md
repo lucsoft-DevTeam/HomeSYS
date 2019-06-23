@@ -1,4 +1,3 @@
-#  HomeSYS [inDEV]
 ![logo](https://lucsoft.de/imgs/homesys)
 
   Combined Smart Home
