@@ -1,5 +1,5 @@
 #  HomeSYS [inDEV]
-![logo](https://github.com/lucsoft-DevTeam/HomeSYS/blob/master/logo1.png?raw=true)
+![logo](https://lucsoft.de/imgs/homesys)
 
   Combined Smart Home
   
