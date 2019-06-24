@@ -107,6 +107,7 @@ try {
         }
     }
     mmanager.onModulesAllCompleted = (e) => {
+        mmanager.getModule("lucsoft.eventManager").data.startEvents();
     };
 } catch (error) {
     tc.log(error);

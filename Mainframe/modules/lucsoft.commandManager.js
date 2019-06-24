@@ -51,7 +51,6 @@ function parseOutput(str, callback) {
     callback(err, wifis);
 }
 ed.control.onWifi = (e) => {
-    ed.log("Wifi found: " + e.ssid);
 };
 ed.control.onWifiScanned = () => {};
 
@@ -94,4 +93,8 @@ ed.control.evalO = (msg) => {
     exec(msg);
 };
 ed.loadModule = () => {
+    ed.control.enableLED();
+    ed.events = ed.getModule("lucsoft.eventManager").data;
+    ed.events.registerEvent("UpdateWifi", ed.control.scanWifi(), ed.events.level.low);
+
 };

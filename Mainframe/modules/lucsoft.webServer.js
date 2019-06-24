@@ -140,17 +140,17 @@ ed.loadDefaultPages = function () {
 
 }
 ed.deleteFiles = function(files, callback){
-var i = files.length;
-files.forEach(function(filepath){
-    fs.unlink(filepath, function(err) {
-    i--;
-    if (err) {
-        callback(err);
-        return;
-    } else if (i <= 0) {
-        callback(null);
-    }
-    });
+    var i = files.length;
+    files.forEach(function(filepath){
+        fs.unlink(filepath, function(err) {
+        i--;
+        if (err) {
+            callback(err);
+            return;
+        } else if (i <= 0) {
+            callback(null);
+        }
+        });
 });
 }
 
@@ -159,7 +159,7 @@ ed.loadModule = () => {
 };
 ed.port = 80;
 ed.startWebserver = () => {
-app.listen(80, function () {
+    app.listen(80, function () {
 
-})
+    })
 };
