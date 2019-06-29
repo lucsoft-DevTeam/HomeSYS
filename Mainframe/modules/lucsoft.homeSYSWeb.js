@@ -4,7 +4,6 @@ ed.name = "HomeSYSWeb";
 ed.icon = false;
 
 var req = require('request');
-var config = require("../lib/config");
 ed.loadModule = () => {
     
 };
@@ -15,7 +14,7 @@ ed.checkIfServiceIsAvailable = () => {
     var options = {
         url: 'https://homesys.lucsoft.de/v1',
         headers: {
-          'token': config.web.apiKey
+          'token': ed.config.get().token
           }
         };
     
@@ -29,7 +28,7 @@ ed.service.getModule = (name,cb) => {
     var options = {
         url: 'https://homesys.lucsoft.de/v1/store.php?name=' + name,
         headers: {
-          'token': config.web.apiKey
+          'token': ed.config.get().token
           }
         };
     

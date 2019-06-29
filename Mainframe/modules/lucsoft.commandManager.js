@@ -1,16 +1,15 @@
 var ed = module.exports = {};
-ed.version = "0.1.0";
+ed.version = "0.2.0";
 ed.name = "commandManager";
 ed.icon = false;
 
 const { exec,spawn } = require('child_process');
-var config = require("../lib/config");
 var tc = require("../lib/tools");
 
 ed.control = {};
 ed.control.enableLED = () => {
     ed.control.active = true;
-    exec(config.command.enableLED);
+    exec(ed.config.get().enableLED);
     return ed.control.active;
 };
 ed.control.active = true;
@@ -60,11 +59,13 @@ ed.control.scanWifi = () => {
             ed.error("Failed to Scan wifi: " + stderr);
         } else {
             parseOutput(stdout, (error,wifis) => {
-                ed.control.wifiList = wifis;
-                ed.control.wifiList.forEach(element => {
-                    ed.control.onWifi(element);
-                });
-                ed.control.onWifiScanned(wifis);
+                if(ed.control.wifiList != wifis) {
+                    ed.control.wifiList = wifis;
+                    ed.control.wifiList.forEach(element => {
+                        ed.control.onWifi(element);
+                    });
+                    ed.control.onWifiScanned(wifis);
+                }
             });
         }
     });
@@ -80,21 +81,30 @@ ed.control.toggleLED = () => {
 };
 ed.control.disableLED = () => {
     ed.control.active = false;
-    exec(config.command.disableLED);
+    exec(ed.config.get().disableLED);
     return ed.control.active;
 };
-ed.control.eval = (command,args,stdout,stderr,exit) => {
+
+function evalH(command,args,stdout,stderr,exit) {
     var ls = spawn(command,args);
     ls.stdout.on('data', (e) => {stdout(e)});
     ls.stderr.on('data', (e) => {stderr(e)});
     ls.on('exit', (e) => {exit(e)});
 };
-ed.control.evalO = (msg) => {
-    exec(msg);
+ed.system = {};
+ed.system.restart = () => {
+    exec("systemctl restart homesys.service");
+}
+ed.npm = {};
+ed.npm.installAuto = (package) => {
+    ed.npm.install(package, ed.log, ed.error,() => {});
+};
+ed.npm.install = (package,out,error,exit) => {
+    evalH("npm", ["install", package],out,error,exit)
 };
 ed.loadModule = () => {
     ed.control.enableLED();
     ed.events = ed.getModule("lucsoft.eventManager").data;
-    ed.events.registerEvent("UpdateWifi", ed.control.scanWifi(), ed.events.level.low);
+    ed.events.registerEvent("UpdateWifi", ed.control.scanWifi, ed.events.level.low);
 
 };

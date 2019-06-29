@@ -1,11 +1,10 @@
 var ed = module.exports = {};
 ed.version = "0.1.0";
-ed.name = "HAPWrapper";
+ed.name = "HAP Wrapper";
 ed.icon = false;
 
 var fs = require('fs');
 var path = require('path');
-var config = require("../lib/config");
 try {
     var storage = require('node-persist');
     var uuid = require('hap-nodejs').uuid;
@@ -367,9 +366,9 @@ ed.loadModule = () => {
 		callback();
     });
     bridge.publish({
-        username: config.homekit.username,
+        username: ed.config.get().username,
         port: 51826,
-        pincode: config.homekit.pincode,
+        pincode: ed.config.get().pincode,
         category: Accessory.Categories.BRIDGE
     });
     ed.cnsl.sendMessage("HomeKit Server is running...");

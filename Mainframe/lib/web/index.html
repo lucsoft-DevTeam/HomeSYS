@@ -6,19 +6,20 @@
     <title>HomeSYS</title>
     <script src="https://api.lucsoft.de/flatweb/beta/webgen"></script>
     <script src="https://api.lucsoft.de/flatweb/beta/jquery.js"></script>
+    <script src="/lib/socket.io.js"></script>
     <link href="https://fonts.googleapis.com/css?family=Material+Icons|Roboto:200,300,100" rel="stylesheet">
     <link rel="stylesheet" href="https://api.lucsoft.de/flatweb/beta/init.php">
     <theme><link rel="stylesheet" href="https://api.lucsoft.de/flatweb/beta/css/white.css"></theme>
 </head>
     <body class="FlatWeb nochange">
+        <span id='notifybox' class="notifybox">Reconnected</span>
         <article id="page" class="">
         </article>
         <script>
-            var test;
+            var test,socket;
             var ele = {titlew: "titlew",cardlist:"cardlist", imagelist:"imagelist",linebreak:"linebreak",titles:"titles",searchbox:"searchbox",buttons:"buttons", loginwindow:"loginwindow",window:"window", imglist:"imglist",applist:"applist"};
+            loadModule("lucsoft.database", () => {database.apiurl = "/";
             
-            loadModule("lucsoft.database", () => {database.apiurl = "/"; 
-            loadParticlesDefault();
                 elementscount++;
                 $("#page").append(`<cardlist id="${elementscount}" class="iconlist"></cardlist>`);
                 $(`#${elementscount}`).addClass("max-width");
@@ -29,42 +30,85 @@
                 $(`#${elementscountid}`).append(`<card id="${elementscount}"class="iconbox nohover"><img src="/imgs/homesys.png"></card>`);
                 var card = elementscount;
                 $(`#${card}`).addClass("blob");
-                changeSpaceing(1, 1);
-                waitFor(300, () => {
-                    changeSpaceing(1, 2);
-                    addElement("loginwindow", {text: {password: "Password", button: "Login", text:"Login to HomeSYS"},
-                beforelogin: () => {
-                    $('#loginerrormsg').css("color", "black");
-                    $('#loginerrormsg').css("margin", "1.6rem");
-                    $('#loginerrormsg').css("font-weight", "300");
-                    $('#loginerrormsg').html("Anmeldung Läuft...");  
-                    changeSpaceing(1, 2);
-                },afterlogin: () => {
-                    removeLastElement();
-                    removeLastElement();
-                    hidee("#3");
-                    $(`#${card}`).removeClass("blob");
-                    changeSpaceing(1, 1);
-                    $(`#${card}`).addClass("blobout");
-                    waitFor(800,() => {
-                        loadHome();
-                        document.cookie["loginpass"] = "loginpassword=" + database.account.password;
-                        $('nav').css("opacity", "100");
-                        
-                    });
-                },onError: () => {
-                    $('#loginerrormsg').css("color", "red");
-                    $('#loginerrormsg').css("margin", "1rem");
-                    $('#loginerrormsg').css("font-weight", "600");                    
-                    $('#loginerrormsg').html("Deine Anmeldedaten sind falsch");
-                }}, (e)=> { 
-                    test=e;
-                });
-                newline();
-                newline();
-                newline();
-                });
                 
+                database.login("admin", filterCookie("loginpassword"), (e) => {
+                    changeSpaceing(1, 1);
+                    waitFor(300, () => {
+                            changeSpaceing(1, 2);
+                            addElement("loginwindow", {text: {password: "Password", button: "Login", text:"Login to HomeSYS"},
+                                beforelogin: () => {
+                                $('#loginerrormsg').css("color", "black");
+                                $('#loginerrormsg').css("margin", "1.6rem");
+                                $('#loginerrormsg').css("font-weight", "300");
+                                $('#loginerrormsg').html("Anmeldung Läuft...");  
+                                changeSpaceing(1, 2);
+                            },afterlogin: (e) => {
+                                removeLastElement();
+                                removeLastElement();
+                                hidee("#3");
+                                $(`#${card}`).removeClass("blob");
+                                changeSpaceing(1, 1);
+                                $(`#${card}`).addClass("blobout");
+                                waitFor(800,() => {
+                                    loadHome();
+                                    socket = io();
+                                    socket.on('system', function(es) {
+                                        if(es == "logged in") {
+                                            triggerNotify("Logged in");
+                                        }
+                                        if(es == "trigger debug") {
+                                            triggerNotify("This is a Debug Message");
+                                        }
+                                        console.log(es);    
+                                    });
+                                    socket.on('disconnect', () => {
+                                        triggerNotify("Connection lost");
+                                    });
+                                    socket.on('reconnect', (attemptNumber) => {
+                                        socket.emit("system", "login " + e);
+                                        triggerNotify("Connection established");
+                                    });
+                                    socket.emit("system", "login " + e);
+                                    document.cookie = "loginpassword=" + database.account.password;
+                                    $('nav').css("opacity", "100");
+                                });
+                            },onError: () => {
+                                $('#loginerrormsg').css("color", "red");
+                                $('#loginerrormsg').css("margin", "1rem");
+                                $('#loginerrormsg').css("font-weight", "600");                    
+                                $('#loginerrormsg').html("Deine Anmeldedaten sind falsch");
+                            }}, (e)=> { 
+                                test=e;
+                            });
+                            newline();
+                            newline();
+                            newline();
+                        });
+                    },(e) => {
+                        changeSpaceing(1, 1);
+                        waitFor(1200, () => {
+                            loadHome();
+                            socket = io();
+                            socket.on('system', function(es) {
+                                if(es == "logged in") {
+                                    triggerNotify("Logged in");
+                                }
+                                if(es == "trigger debug") {
+                                    triggerNotify("This is a Debug Message");
+                                }
+                                console.log(es);    
+                            });
+                            socket.on('disconnect', () => {
+                                triggerNotify("Connection lost");
+                            });
+                            socket.on('reconnect', (attemptNumber) => {
+                                socket.emit("system", "login " + e);
+                                triggerNotify("Connection established");
+                            });
+                            socket.emit("system", "login " + filterCookie("loginpassword"));
+                            $('nav').css("opacity", "100");
+                        });
+                    });
             });
             var menu = `[
                     {

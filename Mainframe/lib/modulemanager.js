@@ -1,6 +1,6 @@
 var fs = require('fs');
 var tc = require("../lib/tools");
-var config = require("../lib/config");
+var config = require("../lib/configManager");
 
 var mmang = module.exports = {};
 mmang.onReady = (e) => {};
@@ -84,7 +84,12 @@ mmang.autoLoad = () => {
                     modulee.log = (msg) => mmang.logConsole(element.slice(0,element.length - 3),msg,0);
                     modulee.error = (msg) => mmang.logConsole(element.slice(0,element.length - 3),msg,1);
                     modulee.getModule = (e) => mmang.getModule(e);
+                    modulee.config = {};
+                    modulee.config.get = () => config.get(element.slice(0,element.length - 3));
+                    modulee.config.set = (e) => config.set(element.slice(0,element.length - 3),e);
+                    modulee.config.push = (e) => config.push(element.slice(0,element.length - 3),e); 
                     modulee.getModules = () => mmang.getModules();
+                    if(modulee.preinitModule != undefined) {modulee.preinitModule();}
                     mmang.modules.push({name: element.slice(0,element.length - 3),disabled:false,id: index, data: modulee});
                     mmang.onModuleInitializing({name: element.slice(0,element.length - 3),id: index,data: modulee});
                 } catch (errorr) {

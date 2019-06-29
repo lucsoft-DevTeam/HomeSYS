@@ -1,10 +1,7 @@
 var ed = module.exports = {};
 ed.version = "0.1.0";
-ed.name = "DeviceManager";
+ed.name = "Device Manager";
 ed.icon = false;
-
-var req = require('request');
-var config = require("../lib/config");
 var tc = require("../lib/tools");
 ed.loadModule = () => {
     ed.loadedConfig = require('../configs/lucsoft.deviceManager/config.json');

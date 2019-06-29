@@ -3,8 +3,8 @@
 */
 var fs = require("fs");
 fs.writeFileSync(process.cwd() + "/lib/log.txt", "");
-
-var config = require("../lib/config");
+var config = require("../lib/configManager");
+config.load();
 var tc = require("../lib/tools");
 tc.log(`
 
@@ -17,7 +17,7 @@ tc.log(`
     ##     ## ##     ## ##     ## ##       ██    ██    ██    ██    ██ 
     ##     ##  #######  ##     ## ########  ██████     ██     ██████  
 
-    Loading Mainframe ${config.mainframeVersion}
+    Loading Mainframe ${config.infos().mainframe}
     Written by lucsoft 2019
 `);
 try {
@@ -42,7 +42,7 @@ try {
         if(e.name == "lucsoft.webServer") {
             e.data.loadDefaultPages();    
             function requireAuth(req, res,callback) {
-                if(req.headers['token'] == tc.SHA256(config.web.loginPassword)) {
+                if(req.headers['token'] == tc.SHA256(config.get("lucsoft.webServer").loginPassword)) {
                     callback();
                 } else {
                     res.status(403);
