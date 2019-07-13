@@ -6,9 +6,10 @@
     <title>HomeSYS</title>
     <script src="https://api.lucsoft.de/flatweb/beta/webgen"></script>
     <script src="https://api.lucsoft.de/flatweb/beta/jquery.js"></script>
-    <script src="/lib/socket.io.js"></script>
+    <script src="index.js"></script>
     <link href="https://fonts.googleapis.com/css?family=Material+Icons|Roboto:200,300,100" rel="stylesheet">
     <link rel="stylesheet" href="https://api.lucsoft.de/flatweb/beta/init.php">
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
     <theme><link rel="stylesheet" href="https://api.lucsoft.de/flatweb/beta/css/white.css"></theme>
 </head>
     <body class="FlatWeb nochange">
@@ -16,119 +17,10 @@
         <article id="page" class="">
         </article>
         <script>
-            var test,socket;
+            var test,ws;
+            var Information = {};
+            var Modules = {};
             var ele = {titlew: "titlew",cardlist:"cardlist", imagelist:"imagelist",linebreak:"linebreak",titles:"titles",searchbox:"searchbox",buttons:"buttons", loginwindow:"loginwindow",window:"window", imglist:"imglist",applist:"applist"};
-            loadModule("lucsoft.database", () => {database.apiurl = "/";
-            
-                elementscount++;
-                $("#page").append(`<cardlist id="${elementscount}" class="iconlist"></cardlist>`);
-                $(`#${elementscount}`).addClass("max-width");
-                $(`#${elementscount}`).addClass("grid_columns_1");
-                
-                var elementscountid = elementscount;
-                elementscount++;
-                $(`#${elementscountid}`).append(`<card id="${elementscount}"class="iconbox nohover"><img src="/imgs/homesys.png"></card>`);
-                var card = elementscount;
-                $(`#${card}`).addClass("blob");
-                
-                database.login("admin", filterCookie("loginpassword"), (e) => {
-                    changeSpaceing(1, 1);
-                    waitFor(300, () => {
-                            changeSpaceing(1, 2);
-                            addElement("loginwindow", {text: {password: "Password", button: "Login", text:"Login to HomeSYS"},
-                                beforelogin: () => {
-                                $('#loginerrormsg').css("color", "black");
-                                $('#loginerrormsg').css("margin", "1.6rem");
-                                $('#loginerrormsg').css("font-weight", "300");
-                                $('#loginerrormsg').html("Anmeldung Läuft...");  
-                                changeSpaceing(1, 2);
-                            },afterlogin: (e) => {
-                                removeLastElement();
-                                removeLastElement();
-                                hidee("#3");
-                                $(`#${card}`).removeClass("blob");
-                                changeSpaceing(1, 1);
-                                $(`#${card}`).addClass("blobout");
-                                waitFor(800,() => {
-                                    loadHome();
-                                    socket = io();
-                                    socket.on('system', function(es) {
-                                        if(es == "logged in") {
-                                            triggerNotify("Logged in");
-                                        }
-                                        if(es == "trigger debug") {
-                                            triggerNotify("This is a Debug Message");
-                                        }
-                                        console.log(es);    
-                                    });
-                                    socket.on('disconnect', () => {
-                                        triggerNotify("Connection lost");
-                                    });
-                                    socket.on('reconnect', (attemptNumber) => {
-                                        socket.emit("system", "login " + e);
-                                        triggerNotify("Connection established");
-                                    });
-                                    socket.emit("system", "login " + e);
-                                    document.cookie = "loginpassword=" + database.account.password;
-                                    $('nav').css("opacity", "100");
-                                });
-                            },onError: () => {
-                                $('#loginerrormsg').css("color", "red");
-                                $('#loginerrormsg').css("margin", "1rem");
-                                $('#loginerrormsg').css("font-weight", "600");                    
-                                $('#loginerrormsg').html("Deine Anmeldedaten sind falsch");
-                            }}, (e)=> { 
-                                test=e;
-                            });
-                            newline();
-                            newline();
-                            newline();
-                        });
-                    },(e) => {
-                        changeSpaceing(1, 1);
-                        waitFor(1200, () => {
-                            loadHome();
-                            socket = io();
-                            socket.on('system', function(es) {
-                                if(es == "logged in") {
-                                    triggerNotify("Logged in");
-                                }
-                                if(es == "trigger debug") {
-                                    triggerNotify("This is a Debug Message");
-                                }
-                                console.log(es);    
-                            });
-                            socket.on('disconnect', () => {
-                                triggerNotify("Connection lost");
-                            });
-                            socket.on('reconnect', (attemptNumber) => {
-                                socket.emit("system", "login " + e);
-                                triggerNotify("Connection established");
-                            });
-                            socket.emit("system", "login " + filterCookie("loginpassword"));
-                            $('nav').css("opacity", "100");
-                        });
-                    });
-            });
-            var menu = `[
-                    {
-                        "title":"Home",
-                        "fun":"loadHome();",
-                        "style":"left"
-                    },
-                    {
-                        "title":"Devices",
-                        "fun":"loadDevices();"
-                    },
-                    {
-                        "title":"Modules",
-                        "fun":"loadModules()"
-                    },
-                    {
-                        "title":"Settings",
-                        "fun":"loadSettings()"
-                    }
-                ]`;
             function loadSettings() {
                 $('article').remove();
                 $('nav').remove();
@@ -150,10 +42,7 @@
                     text: { title: "Settings" },
                     max_width: "90rem",
                     buttons: [ ]
-                },
-                () => { loadSettingsDashboard();
-                    
-                });
+                }, () => loadSettingsDashboard());
             }
             function loadSettingsDevices() {
                 $("content").html('<span class="titleg">Connected Devices</span><div id="deviceitems"></div>');
@@ -371,52 +260,6 @@
                         newline();      
                     });
                 });
-                
-               /* addElement("searchbox",{
-                    searchtext:"Search for a Module",
-                    index: [{name: ["lucsoft.DiscordClient","v0.1.2"],id:"lucsoft.DiscordClient",street:"2 Installations"}],
-                    error: {
-                        notfound: "Not Found"
-                    }, onsearch: () => {
-                        godown(false);
-                    }, onclose:() => {
-                        loadModules();
-                    }
-                },(e) => { e.input.focus();});
-                newline();
-               /* elementscount++;
-                $("#page").append(`<cardlist id="${elementscount}" class="iconlist"></cardlist>`);
-                $(`#${elementscount}`).addClass("max-width");
-                $(`#${elementscount}`).addClass("grid_columns_auto");
-                
-                var elementscountid = elementscount;
-                elementscount++;
-                $(`#${elementscountid}`).append(`<card id="${elementscount}"class="iconcard">
-                    <img src="https://data.lucsoft.de/uploads/HomeSYS_compressd2.png">
-                    <div>
-                    <span class="title">HomeKit / Siri</span>
-                    <span class="subtitle">Using HAP-NodeJS, HAPWrapper</span>
-                    <center><button class="one">Install and Reload</button></center>
-                    </div>
-                </card>`);
-                elementscount++;
-                $(`#${elementscountid}`).append(`<card id="${elementscount}"class="iconcard">
-                    <img src="https://data.lucsoft.de/uploads/HomeSYS_compressd2.png">
-                    <div>
-                    <span class="title">lucsoft.webServer</span>
-                    <span class="subtitle">Required Module</span>
-                    <button class="one disabled">You can't remove it...</button>
-                    </div>
-                </card>`);
-                $(`#${elementscountid}`).append(`<card id="${elementscount}"class="iconcard">
-                    <img src="https://data.lucsoft.de/uploads/HomeSYS_compressd2.png">
-                    <div>
-                    <span class="title">lucsoft.Mainframe</span>
-                    <span class="subtitle">Required Module (v0.2.0)</span>
-                    <button class="one disabled">You can't remove it...</button>
-                    </div>
-                </card>`);
-                 */
             }
             function loadHome() {
                 $('article').remove();
@@ -427,14 +270,24 @@
                 $('#page').append('<splitView class="m"><content></content><sidebar></sidebar></splitView>');
                 addElement("cardlist",{
                     small: true,
-                    grid_columns: 2,
+                    grid_columns: 3,
                     cardtype: "lline",
                     max_width: true,
                     effect: false,
                     cards:[
-                        {title: "4", subtitle: "ACTIVE Devices"},
-                        {title: "9", subtitle: "Connected Devices"},
-                        {title: "Alpha", subtitle: "Version"}
+                        {title: Information.modules, subtitle: "Modules",id:"modules"},
+                        {title: Information.version, subtitle: "Version", id:"version"},
+                        {title: Information.devices, subtitle: "Connected DEVICES", id:"devices"}
+                    ]
+                }, () => {}, "content");
+                addElement("cardlist",{
+                    small: true,
+                    grid_columns: 1,
+                    cardtype: "lline",
+                    max_width: true,
+                    effect: false,
+                    cards:[
+                        {title: Information.wifi, subtitle: "Connected Wifi", id:"wifi"}
                     ]
                 }, () => {}, "content");
                 addElement("imglist", {

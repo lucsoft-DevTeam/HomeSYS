@@ -1,6 +1,7 @@
 {
     "infos": {
-        "mainframe":"0.2.5",
+        "mainframe":"0.2.7",
+        "codename": "Alpha",
         "moduleManager": "0.2"
     },
     "modules": {
@@ -27,6 +28,14 @@
         "lucsoft.HAPWrapper": {
             "username": "C1:23:4D:E3:CA:FA",
             "pincode": "131-31-313"
+        },
+        "lucsoft.deviceManager": {
+            "registered": [
+                {
+                    "ip": "192.168.0.97",
+                    "serialnumber":"HSM-1dsf83jjf0"
+                }
+            ]
         }
     }
 }

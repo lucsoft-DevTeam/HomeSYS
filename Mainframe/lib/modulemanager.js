@@ -51,7 +51,7 @@ mmang.closeModule = (id) => {
     
 };
 
-mmang.onModulesInitialized = () => {};
+mmang.onModulesInitialized = (_,clb) => {clb()};
 mmang.modules = [];
 mmang.getModule = (id) => {
     return mmang.modules.find(x => x.name == id);
@@ -72,7 +72,9 @@ mmang.getModules = () => {
 } 
 
 mmang.errorswhilebooting = false;
-mmang.autoLoad = () => {
+mmang.modulewhilebooting = "";
+
+mmang.startHomeSYS = () => {
     tc.log(`[${tc.getTimestamp(new Date())}] <lucsoft.Mainframe> Loading Modules...`);
     fs.readdir("./modules/",(e,f) => { 
         for (let index = 0; index < f.length; index++) {
@@ -88,6 +90,9 @@ mmang.autoLoad = () => {
                     modulee.config.get = () => config.get(element.slice(0,element.length - 3));
                     modulee.config.set = (e) => config.set(element.slice(0,element.length - 3),e);
                     modulee.config.push = (e) => config.push(element.slice(0,element.length - 3),e); 
+                    modulee.config.infos = () => config.infos(); 
+                    modulee.boot = {bootErrors: mmang.errorswhilebooting, moduleError: mmang.modulewhilebooting}; 
+                    
                     modulee.getModules = () => mmang.getModules();
                     if(modulee.preinitModule != undefined) {modulee.preinitModule();}
                     mmang.modules.push({name: element.slice(0,element.length - 3),disabled:false,id: index, data: modulee});
@@ -101,7 +106,7 @@ mmang.autoLoad = () => {
                     }
                 }
             } else {
-                mmang.modules.push({name:"lucsoft.Mainframe", id:index,disabled: false, data: {version: config.mainframeVersion, name: "Mainframe", icon: false}});
+                mmang.modules.push({name:"lucsoft.Mainframe", id:index,disabled: false, data: {version: config.infos().mainframe, name: "Mainframe", icon: false}});
             }
             
         }
@@ -114,6 +119,7 @@ mmang.autoLoad = () => {
                         mmang.onModuleLoaded({name: eg.name,id: eg.id,version: eg.data.version});
                     } catch (error) {
                         mmang.errorswhilebooting = true;
+                        mmang.modulewhilebooting = {name: eg.name, id: eg.id, version: eg.data.version};
                         eg.disabled = true;
                         console.log(error);
                         mmang.onModuleSendMesage("lucsoft.Mainframe", error);
@@ -122,9 +128,9 @@ mmang.autoLoad = () => {
                 } 
             });
             if (mmang.errorswhilebooting) {
-                mmang.onModuleSendMesage("lucsoft.Mainframe", "HomeSYS is running! Waiting for Service inputs... (Errors while Boot)!");
+                mmang.onModuleSendMesage("lucsoft.Mainframe", "Some Modules created Errors but HomeSYS is running. Starting Services...");
             } else {
-                mmang.onModuleSendMesage("lucsoft.Mainframe", "HomeSYS is running! Waiting for Service inputs... (No Erros while Boot)");
+                mmang.onModuleSendMesage("lucsoft.Mainframe", "Starting Services...");
             }
             
             mmang.onModulesAllCompleted();

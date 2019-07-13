@@ -7,6 +7,8 @@ ed.loadModule = () => {
     ed.loadedConfig = require('../configs/lucsoft.deviceManager/config.json');
     ed.web = ed.getModule("lucsoft.webServer").data;
     ed.homekit = ed.getModule("lucsoft.HAPWrapper").data;
+    
+    ed.events = ed.getModule("lucsoft.eventManager").data;
     ed.loadedConfig.devices.ips.forEach(ip => {
         ed.web.requestWeb("http://" + ip + "/info",(e) => {
             if(e.firmware != null) {
@@ -19,6 +21,7 @@ ed.loadModule = () => {
 ed.updateConfig = () => {
     ed.loadedConfig = require('../configs/lucsoft.deviceManager/config.json');
 };
+
 ed.devices = [];
 ed.getDevices = () => {return ed.devices;};
 ed.knownTypes = [];
@@ -50,11 +53,9 @@ ed.addPages = (web,requireAuth,callback) => {
             res.status(200).send('Connected');
         } else if(ed.knownTypes.includes(req.query.type)) {
             ed.cnsl.sendMessage("Autoconnect: " + req.query.type + " Connection from " + req.connection.remoteAddress.split(":ffff:")[1]); 
-        
             res.status(200).send('Connected');
         } else {
             ed.cnsl.sendMessage("Autoconnect: Untrusted Connection from " + req.connection.remoteAddress.split(":ffff:")[1]); 
-        
             res.status(403).send('Forbidden');
         }
     });
@@ -67,6 +68,9 @@ ed.addDevice = (serialNumber,firmware,ip) => {
         ed.devices.push({type: "HomeSYS-Module", serialNumber: serialNumber,ip, name:name,enabledServices:[]});
         ed.cnsl.sendMessage("Added Device to HomeSYS (" + name + ")");
         ed.updateService();
+        ed.events.triggerChannel("UpdatedDeviceList", ed.devices);
+        ed.events.triggerChannel("NewDevice", {type: "HomeSYS-Module", serialNumber: serialNumber,ip, name:name,enabledServices:[]});
+        
     }
 };
 ed.loadedConfig = {};

@@ -1,37 +1,44 @@
 try {
     
 var ed = module.exports = {};
-ed.version = "0.1.0";
+ed.version = "0.1.1";
 ed.name = "Event Manager";
 ed.icon = false;
+var eventEmitter = new (require('events')).EventEmitter();
 ed.events = {};
 ed.events.low = [];
 ed.events.mid = [];
 ed.events.high = [];
 ed.events.important = [];
 ed.events.list = [];
+ed.linkChannel = (name,callback) => {
+    eventEmitter.on(name,callback);
+};
+ed.triggerChannel = (name,message) => {
+    eventEmitter.emit(name,message);
+};
 
 ed.registerEvent = (name,command,level) => {
     switch (level) {
         case ed.level.important:
             ed.events.list.push({name:name,level:"important"});
             ed.events.important.push({name: name, cmd: command});
-            ed.log(name + " was added to the Event Manager (level: Important)");
+            ed.log(name + " is now a registered Event (level: Important");
             return true;
         case ed.level.high:
             ed.events.list.push({name:name,level:"high"});
             ed.events.high.push({name: name, cmd: command});
-            ed.log(name + " was added to the Event Manager (level: High)");
+            ed.log(name + " is now a registered Event (level: High)");
             return true;
         case ed.level.mid:
             ed.events.list.push({name:name,level:"mid"});
             ed.events.mid.push({name: name, cmd: command});
-            ed.log(name + " was added to the Event Manager (level: Mid)");
+            ed.log(name + " is now a registered Event (level: Mid)");
             return true;
         case ed.level.low:
             ed.events.list.push({name:name,level:"low"});
             ed.events.low.push({name: name, cmd: command});
-            ed.log(name + " was added to the Event Manager (level: Low)");
+            ed.log(name + " is now a registered Event (level: Low)");
             return true;
         default:
             return false;
@@ -47,7 +54,6 @@ ed.unRegisterEvent = (name) => {
 };
 
 ed.startEvents = () => {
-    ed.log("Starting Events...");
     ed.events.midID = setInterval((sys) => {
         sys.events.mid.forEach(element => {
            try {
@@ -84,9 +90,7 @@ ed.startEvents = () => {
            } 
         });
     },ed.level.important,ed);
-    ed.log("Events are Running");
     ed.registerEvent("LedBlink", ed.cmdm.control.toggleLED, ed.level.mid);
-
 };
 ed.getEvents = () => {
     return ed.events.list;
@@ -96,7 +100,8 @@ ed.preinitModule = () => {
 };
 ed.loadModule = () => {
     ed.cmdm = ed.getModule("lucsoft.commandManager").data;
-    
+
+     
 };
 
 } catch (error) {
