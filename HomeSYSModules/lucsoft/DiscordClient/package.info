@@ -1,4 +1,0 @@
-title=DiscordClient
-description=DiscordClient allows to Control you HomeSYS with the Discord Chat
-version=0.1.1
-requires=discord.js

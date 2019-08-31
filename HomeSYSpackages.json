@@ -1,0 +1,14 @@
+[
+    {
+        "name":"lucsoft.webServer",
+        "version":"0.1.0"
+    }, 
+    {
+        "name":"lucsoft.updateAssistent",
+        "version":"0.1.0"
+    }, 
+    {
+        "name":"lucsoft.Mainframe",
+        "version":"0.2.0"
+    }
+]

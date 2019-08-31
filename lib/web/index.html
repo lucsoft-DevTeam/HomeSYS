@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HomeSYS</title>
+    <script src="https://api.lucsoft.de/flatweb/beta/webgen"></script>
+    <script src="https://api.lucsoft.de/flatweb/beta/jquery.js"></script>
+    <script src="index.js"></script>
+    <link href="https://fonts.googleapis.com/css?family=Material+Icons|Material+Icons+Round|Roboto:200,300,100" rel="stylesheet">
+    <link rel="stylesheet" href="https://api.lucsoft.de/flatweb/beta/init.php">
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    <theme></theme>
+</head>
+    <body class="FlatWeb nochange">
+        <span id='notifybox' class="notifybox">Reconnected</span>
+        <article id="page" class="">
+        </article>
+        <script>
+            var test,ws,player;
+            var Information = {};
+            var Player = {};
+            addLayout("float");
+            var Modules = {};
+            var ele = {titlew: "titlew",cardlist:"cardlist", imagelist:"imagelist",linebreak:"linebreak",titles:"titles",searchbox:"searchbox",buttons:"buttons", loginwindow:"loginwindow",window:"window", imglist:"imglist",applist:"applist"};
+            function loadSettings() {
+                $('article#page').remove();
+                $('article#connectedDevices').remove();
+                loadPlayer();
+                $('body').append('<article id="page" class="padding"></article>');
+                addElement(ele.window, {
+                    content: `<span class="text">
+                        <splitView class="one nomargin">
+                            <sidebar class="list">
+                                <span class="item" onclick="loadSettingsGeneral()">General</span>
+                                <span class="item" onclick="loadSettingsSystem()">System</span>
+                                <span class="item" onclick="loadSettingsAbout()">About</span>
+                            </sidebar>
+                            <content style="padding: 1rem">
+                            </content>
+                        </splitView>
+                    </span>`,
+                    text: { title: "Settings" },
+                    max_width: "90rem",
+                    buttons: [ ]
+                }, () => loadSettingsGeneral());
+            }
+            var autoscroll= true;
+            function updateLog(test = true) {
+                if(!$("#log2").length) {
+                    console.log("Disabled Interval: Log Refesh");
+                    clearInterval(interval);
+                    return;
+                }
+                getDataAuth('http://' + window.location.hostname + '/Mainframe/log',database.account.password, (e) => {
+                    $('.log').html(e);
+                    if (autoscroll){
+                        if(test) {
+                            scrollSmoothToBottom("log2");
+                        } else {
+                            scrollToBottom("log2");
+                        }
+                    }
+                    
+                });
+            }
+            var interval;
+            function loadSettingsSystem() {
+                try {
+                    clearInterval(interval);
+                } catch(e){}
+                $("content").html('<span class="titleg">Modules</span><div id="moduleitems"></div>');
+                $("#moduleitems").append('<center id="tshfuiosd"><br><button class="one"onclick="enableModules()">Enable Modules View</button><br><br></center>');
+                
+                $("content").append('<br>');
+                $("content").append('<span class="titleg">Debugging</span><div id="debuggingitems"></div>');
+                $("#debuggingitems").append('<center id="tshfuiosd"><br><button class="one"onclick="enableLog()">Enable Debugging</button><br><br></center>');
+                
+            }
+            function enableModules() {
+                getDataAuth('http://' + window.location.hostname + '/Mainframe/modules',database.account.password, (e) => {
+                    var objs = JSON.parse(e);
+                    $("#moduleitems").html('<list class="style2 nomargin"></list>');
+                    objs.forEach(element => {                
+                        $("list").append('<item>' + element.name+'<span class="right">' + ((element.disabled) ? "DISABLED": "ENABLED" )+'</span></item>');                                  
+                    });              
+                });
+            }
+            function enableLog() {
+                $("#debuggingitems").html("");
+                addElement(ele.buttons,{
+                    big: false,
+                    nocenter: true,
+                    list:[
+                        {text: "Restart", onclick: "getDataAuth('http://" + window.location.hostname + "/Mainframe/restart',database.account.password, (e) => {$('#log2').html('HomeSYS is Restarting...');});"},
+                        {text: "Debug Message", onclick: "getDataAuth('http://" + window.location.hostname + "/Mainframe/debugmsg',database.account.password, (e) => {updateLog(false)});"},
+                        {text: "Toggle Autoscroll", onclick: "autoscroll = !autoscroll"}
+                    ]
+                }, () => {}, "#debuggingitems");
+                $("#debuggingitems").append('<div id="log2" class="log">Loading...</div>');
+                $("#debuggingitems").append('<list class="two"><input class="custom" id="evalinput" type="text"><button class="one" style="width:auto;display:inline;"onclick="getDataAuth(\'http://homesys.local/Mainframe/eval?command=\'+ $(\'#evalinput\').val(),database.account.password, (e) => {$(\'#evalinput\').val(\'\')});">Run</button></list>');
+                updateLog(false);
+                interval = setInterval(() => {updateLog()}, 2000); 
+            }
+            Lists.createList("settings");
+            Lists.createList("infos");
+            
+            function loadSettingsGeneral() {
+                $("content").html("")
+                Lists.clearElements("settings");
+                Lists.clearElements("infos");
+                
+                Lists.addElement("settings", {
+                    icon: "wifi",
+                    name: "Wifi",
+                    desc: Information.wifi != false ? `Connected with ${Information.wifi}`: undefined,
+                    right: `<label ${Information.ethernet ? 'onclick=""':''} class="toggle ${Information.ethernet ? '':'disabled'}"><input ${Information.ethernet ? '':'disabled'} type="checkbox" ${(Information.wifi != false) ? 'checked': ''}><span class="slider round"></span></label>`
+                }); 
+                Lists.addElement("settings", {
+                    icon: "wb_sunny",
+                    name: "White Mode",
+                    desc: `Caution! This mode will hurt your eyes in the Night`,
+                    right: `<label onclick="" class="toggle"><input onclick="toggleDarkWhite(() => {ws.send('settings theme dark')});" type="checkbox" ${(getTheme() == "white") ? 'checked': ''}><span class="slider round"></span></label>`
+                });
+                Lists.addElement("settings", {
+                    icon: "wb_incandescent",
+                    iconflip: true,
+                    name: "LED Blink",
+                    right: `<label onclick="" class="toggle"><input onclick="" type="checkbox"><span class="slider round"></span></label>`
+                });
+                Lists.addElement("settings", {
+                    icon: "power_settings_new",
+                    name: "Restart HomeSYS",
+                    right: `<button onclick="getDataAuth('http://${window.location.hostname}/Mainframe/restart',database.account.password, (e) => {$(this).hide();})">Restart</button>`
+                });
+                
+                $("content").append(Lists.generateList("settings"));
+                $("content").append("<br>");
+                $("content").append('<span class="titleg">Information</span>');
+                Lists.addElement("infos", {
+                    icon: "home",
+                    name: "HomeSYS-ID",
+                    desc: "Its generated for your Home ❤️",
+                    right: Information.homesys.id
+                });
+                Lists.addElement("infos", {
+                    icon: "code",
+                    name: "Version",
+                    right: Information.version
+                });
+                
+                $("content").append(Lists.generateList("infos"));
+            }
+            function loadSettingsAbout() {
+                $("content").html("")
+                addElement(ele.titles, {
+                    title: "© 2019 lucsoft",
+                    subtitle: "Made with Love in Germany by lucsoft-DevTeam",
+                    subtitleposx: "0rem"
+                }, () => {},"content");
+                $("content").append("<center><button class='one' onclick='openInNewTab(`https://github.com/lucsoft-DevTeam/HomeSYS`)'>GitHub</button></center>");
+                newline("content");
+                newline("content");
+                newline("content");
+                newline("content");
+            }
+            function loadPlayer(article = "#float") {
+                $(article).html("");
+                player = addElement("player", {
+                   img:"https://i.scdn.co/image/4d3a103c4ad5fcbb54f90eb5c9cfabed1b48efa5",
+                   small: true,
+                   onInput: (e,d) => {
+                        if(e == "next") {
+                            ws.send("audio next"); 
+                        } 
+                        if(e == "previous") {
+                            ws.send("audio previous");
+                        }
+                        if(e == "pause") {
+                            ws.send("audio pause");
+                        }
+                        if(e == "play") {
+                            ws.send("audio resume");
+                        }
+                        if(e == "search") {
+                            ws.send("audio play " + d);
+                        }
+                   }
+                }, () => {}, article);
+                if(Player.is_playing == true) {
+                   
+                    updatePlayer(player.id,{
+                        artist: Player.item.artists[0].name,
+                        album: Player.item.album.name, 
+                        img: (Player.item.album.images[1] != undefined) ? Player.item.album.images[1].url : undefined,
+                        name: Player.item.name,
+                        status: "Playing on " + Player.device.name,
+                        isplaying: true
+                    });
+                    
+                }
+            }
+            function loadDevices() {
+                $('article#page').remove();
+                $('article#connectedDevices').remove();
+                $('body').append('<article id="page" class="padding"></article>');
+                loadPlayer();
+                addElement(ele.buttons,{
+                    big: true,
+                    list:[
+                        {text: "Turn Everything off", onclick: ""},
+                        {text: "Turn Everything on", onclick: ""},
+                        {text: "Turn on Schreibtisch", onclick: ""}
+                    ]
+                }, () => {});
+
+                addLayout("connectedDevices");
+                addElement("titles", {
+                    title: "Connected Devices",
+                    subtitle: "Here you can see all Devices"
+                }, () => {},"#connectedDevices");
+                addElement("cardlist",{
+                    small: true,
+                    grid_columns: "auto",
+                    cards:[
+                        {title: "Loading..."},
+                        {title: "Loading..."},
+                        {title: "Loading..."}
+                    ]
+                }, () => {},"#connectedDevices");
+                getDataAuth('http://' + window.location.hostname + '/device/connected',database.account.password, (e) => {
+                    var objs = JSON.parse(e); 
+                    console.log(objs);
+                });
+                setInterval(() => {
+                   
+                }, 1000);
+            }
+            function loadModules() {
+                $('article#page').remove();
+                $('article#connectedDevices').remove();
+                loadPlayer();
+                $('body').append('<article id="page" class="padding"></article>');
+                addElement("titles", {
+                    title: "The Marketplace for your HomeSYS",
+                    subtitle: "Here you can install, update or remove Modules"
+                }, () => {});
+                addElement("cardlist",{
+                    small: true,
+                    grid_columns: "auto",
+                    cards:[
+                        {title: "Loading..."},
+                        {title: "Loading..."},
+                        {title: "Loading..."}
+                    ]
+                }, () => {});
+                getDataAuth('http://' + window.location.hostname + '/Mainframe/store/trending',database.account.password, (e) => {
+                    var objs = JSON.parse(e);
+                    if(objs.authentication == "granted") {
+                        removeLastElement();
+                        var trendy = [];
+                        var installed  = [];
+                        objs.modules.forEach(modl => {
+                            trendy.push({title: modl.name, subtitle: modl.id + " | " + modl.version, img: modl.icon == false ? '/imgs/noicon.png' : modl.icon,disabled: modl.disabled,button: installed.indexOf(modl.id) != -1 ? "Uninstall" : "Install"});
+                        });
+                        addElement(ele.applist,{
+                            grid_columns: "auto",
+                            max_width: true,
+                            app:trendy
+                        }, () => {});
+                    } else {
+                        $('#page').html("");
+                        addElement("titlew", {
+                            title: "403 Forbidden",
+                            subtitle: "You dont have Permissions to Access the Store",
+                            subtitleposx: "0"
+                        }, () => {});
+                    }
+                    getDataAuth('http://' + window.location.hostname + '/Mainframe/modules',database.account.password, (e) => {
+                        var json = JSON.parse(e);
+                        var modules = [];
+                        json.forEach(modl => {
+                            if(modl['icon'] != undefined) {
+                                modules.push({title: modl.name, subtitle: modl.id + " | " + modl.version, img: modl.icon == false ? '/imgs/noicon.png' : modl.icon,disabled: true,button: "Uninstall"});
+                            } else {
+                                modules.push({title: modl.name, subtitle: modl.name + " | " + "No Version" , img: '/imgs/noicon.png' ,button: "Uninstall"});
+                            
+                            }
+                                
+                        });
+                        newline();
+                        newline();
+                        newline();
+                        addElement("titles", {
+                           title:"Active Modules"
+                        }, () => {});
+                        addElement(ele.applist,{
+                            grid_columns: "auto",
+                            max_width: true,
+                            app:modules
+                        }, () => {});     
+                        newline();
+                        newline();
+                        newline();      
+                    });
+                });
+            }
+            function loadHome() {
+                $('article#page').remove();
+                $('article#connectedDevices').remove();
+                $('article#float').html("");
+                $('body').append('<article id="page" class="padding"></article>');
+                addElement("note", {
+                   text:"Welcome to HomeSYS!",
+                   type: "home",
+                }, () => {});
+                $('#page').append('<splitView class="m"><content></content><sidebar></sidebar></splitView>');
+                addElement("cardlist",{
+                    small: true,
+                    grid_columns: 3,
+                    cardtype: "lline",
+                    max_width: true,
+                    effect: false,
+                    cards:[
+                        {title: Information.modules, subtitle: "Modules",id:"modules"},
+                        {title: Information.version, subtitle: "Version", id:"version"},
+                        {title: Information.devices, subtitle: "Connected DEVICES", id:"devices"}
+                    ]
+                }, () => {}, "content");
+                addElement("cardlist",{
+                    small: true,
+                    grid_columns: 1,
+                    cardtype: "lline",
+                    max_width: true,
+                    effect: false,
+                    cards:[
+                        {title: Information.wifi, subtitle: "Connected Wifi", id:"wifi"}
+                    ]
+                }, () => {}, "content");
+ 
+                player = addElement("player", {
+                   img:"https://i.scdn.co/image/4d3a103c4ad5fcbb54f90eb5c9cfabed1b48efa5",
+                   small: false,
+                   onInput: (e,d) => {
+                        if(e == "next") {
+                            ws.send("audio next"); 
+                        } 
+                        if(e == "previous") {
+                            ws.send("audio previous");
+                        }
+                        if(e == "pause") {
+                            ws.send("audio pause");
+                        }
+                        if(e == "play") {
+                            ws.send("audio resume");
+                        }
+                        if(e == "search") {
+                            ws.send("audio play " + d);
+                        }
+                   }
+                }, () => {}, "sidebar");
+                updateTextForWifi();
+                ws.send("audio get");
+                setInterval(() => {
+                try {
+                    if(Player.is_playing == true) {
+                        updatePlayer(player.id, {
+                            progress_ms: Player.progress_ms,
+                            duration_ms: Player.item.duration_ms
+                        });
+                    } else {
+                    }
+                    
+                } catch (error) {
+                    console.log(error);
+                }
+            },200);
+            }
+        </script>
+    </body>
+</html>

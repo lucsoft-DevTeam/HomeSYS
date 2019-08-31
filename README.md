@@ -1,7 +1,17 @@
-![logo](https://lucsoft.de/imgs/homesys)
+# Mainframe of HomeSYS
 
-  Combined Smart Home
+### Installation:
+
+    wget http://i.homesys.lucsoft.de/install.sh;sudo sh install.sh
+
   
-# This Project is still in Alpha...
-### If you know what you doing you can install it now! [Click here for a Guide](https://github.com/lucsoft-DevTeam/HomeSYS/tree/master/Mainframe)
-### Do you wanna Develop with us? [Join our Discord!](https://discord.gg/9GHYtuu)
+### Images
+
+![Home](https://data.lucsoft.de/uploads/7aOtPasIlQ.png)
+![Login](https://data.lucsoft.de/uploads/QbnpNuAWTs.png)
+
+### Usage
+
+   Change you Hostname to homesys.
+   
+   After install go to http://homesys.local and login with the password in the config
