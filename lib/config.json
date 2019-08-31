@@ -6,7 +6,7 @@
     },
     "modules": {
         "lucsoft.homeSYSWeb": {
-            "token": "g5cka63STinRp9PETwQPK60Oj7icGNYVLmdM9ogmBtSJT5rayoKM1C4MTfW5xxxSzkWxdUvJhln6ZOxIUlCtjH5TfzXxuCf2zQaRwv12rOYLaiJaEmJAuegfBSRFJxTx4Q8TpPRfLM2eugbuTfT666bxhicOwNupyupwkOQtFcmmNMSOc9Toip2SlfVjVuyvXanh0sSOYi9ck0WpVhzRmBTP7AsltlbO32vB9ttyv6AN1l0Zs4EVzPPrhLsLVkrf"
+            "token": ""
         },
         "lucsoft.eventManager": {
             "important": 250,
@@ -17,7 +17,7 @@
         "lucsoft.integrationManager": {
             "service": {
                 "spotify": {
-                    "token": "BQBqejQjUdYpYVaNv7jhupApaBJScrKtCH_K1xUk7J7iUZ51FGMZtABxsvr0cQfoTLgiEWz9DzO5quXMhzG9-ZTQEEuhJFPzC60FlrGoqOGfHUGgAzpJ35qjXxnY7HVU_aP5HbTZx6ESYzjt59m1PJXQ3PRQ9rEzvKne1YIquF0kYZy5vu29uEsceaJHt5tAfR6woXnQvblve-h21mBKMJDLVbxFDVtADyTxoIb9t80PRg669g00PfjlQN9K3EpnDtbCbTxpnl-q"
+                    "token": ""
                 }
             }
         },
@@ -26,10 +26,10 @@
             "trending": "/v1/store.php?type=trending",
             "api": {
                 "path": "/v1/home.php",
-                "token": "|V8^ZDU[f§.T35:owa)yr@_Dd=h4jUXJYer@ZNz.*^I°7}@;%t]LX9QqZ$}:T§IQ;^fPT}B7McQ*3Z;V#8Q_)zmc8+vg60cWYr%)Xm3G6Yc1c=McI&RGE0N^qV-_LO%",
+                "token": "",
                 "id":"7210421956764186364"
             },
-            "token": "g5cka63STinRp9PETwQPK60Oj7icGNYVLmdM9ogmBtSJT5rayoKM1C4MTfW5xxxSzkWxdUvJhln6ZOxIUlCtjH5TfzXxuCf2zQaRwv12rOYLaiJaEmJAuegfBSRFJxTx4Q8TpPRfLM2eugbuTfT666bxhicOwNupyupwkOQtFcmmNMSOc9Toip2SlfVjVuyvXanh0sSOYi9ck0WpVhzRmBTP7AsltlbO32vB9ttyv6AN1l0Zs4EVzPPrhLsLVkrf",
+            "token": "",
             "hostname":"homesys.lucsoft.de",
             "theme":"dark"   
         },
