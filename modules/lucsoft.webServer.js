@@ -3,6 +3,7 @@ ed.version = "0.1.0";
 ed.name = "webServer";
 ed.icon = false;
 var msg;
+var crypto = require('crypto');
 var express = require('express');
 var app = express();
 var https = require('https');
@@ -183,8 +184,7 @@ ed.deleteFiles = function(files, callback){
 });
 }
 ed.preinitModule = () => {
-    ed.events = ed.getModule("lucsoft.eventManager").data;
-    
+    ed.events = ed.getModule("lucsoft.eventManager").data;  
 };
 ed.loadModule = () => {
     ed.cmdmanager = ed.getModule("lucsoft.commandManager").data;
@@ -254,6 +254,9 @@ ed.socket.actions = [{
     id: "regi",
     command: (e,socket,u,reply) => {
         e.replace("regi ","").split(" ").forEach((e) => u.actions.push(e));
+        if(e.includes("node")) {
+            ed.events.triggerChannel("NewDevice", u);
+        }
     }
 },{
     id: "unregi",
@@ -266,6 +269,16 @@ ed.socket.actions = [{
         reply("wifiname", ed.cmdmanager.network.wifi);
     }
 }, {
+    id: "control",
+    command: (e,socket,u,reply) => {
+        var args = e.replace("control ", "").split(" ")
+        if(args[0] == "hue") {
+            reply("error",args);
+            ed.getModule("lucsoft.nodeHandler").data.actions.sendLED(args[1], args[2],args[3],args[4]);
+        }
+    }
+}
+, {
     id: "status",
     command: (e,socket,u,reply) => {
         reply("status", {
@@ -293,16 +306,47 @@ ed.startWebserver = () => {
         keepalive: true,
         fragmentOutgoingMessages: false
     });
+    ws.on("close", (socket) => {
+        console.log(socket);
+    });
     ws.on("connect", (socket) => {
         ed.sockets.push({socket: socket,loggedin: false});
         socket.on("message",(msgRaw) => {
             var msg = msgRaw.utf8Data;
-            var user = ed.sockets.filter(x => x.socket == socket)[0];
+            var user = ed.sockets.filter(x => x.socket.remoteAddress == socket.remoteAddress)[0];
             if(msg == undefined) return; 
             if(msg.startsWith("login")) {
-                if(tc.SHA256(ed.config.get().loginPassword) == msg.slice("login ".length)) {
+                var modulelogin = msg.split(' ');
+                if (modulelogin[0] == "login" && modulelogin.length == 3) {
+                    if (crypto.createHash('md5').update("sbHEkmOFRXxIQwDGsSJgYmCmhAYdIORY").digest("hex") == modulelogin[2]) {
+                        user.loggedin = true;
+                        user.actions = [];
+                        user.name = modulelogin[1];
+                        user.type = "node";
+                        user.close = (why = "!") => {
+                            socket.close();
+                            ed.sockets = ed.sockets.filter(x => x.socket.remoteAddress != socket.remoteAddress);
+                            ed.log(user.name + " was forceclosed" + why);
+                        };
+                        ed.events.triggerChannel("node",{name:"HSM-BTlhESBplyfSyyk",action:{state:"true",name:"info"}});
+                        socket.sendUTF("LoggedIn");    
+                        ed.events.linkChannel("node",(e) => {
+                            if(user.actions.indexOf("node") != -1 && user.name == e.name){
+                                socket.sendUTF(tc.getJson({type:"node", message: e}));
+                            }
+                        });
+                        ed.events.linkChannel("SocketError",(e) => {
+                            socket.sendUTF(tc.getJson({type:"error", message: e}));
+                        });   
+                        ed.events.linkChannel("SocketMessage",(e) => {
+                            socket.sendUTF(tc.getJson({type:"message", message: e}));
+                        });   
+                        return;
+                    }
+                } else if(tc.SHA256(ed.config.get().loginPassword) == msg.slice("login ".length)) {
                     user.loggedin = true;
                     user.actions = [];
+                    user.type = "user";
                     socket.sendUTF("LoggedIn");
                     ed.events.linkChannel("NetworkChange",(e) => {
                         if(user.actions.indexOf("Network") != -1){
@@ -342,8 +386,14 @@ ed.startWebserver = () => {
             if(user.loggedin == false) {
                 socket.sendUTF("NotLoggedIn");
             } else {
+                
                 try {
-                    ed.socket.actions.filter(x => msg.startsWith(x.id))[0].command(msg,socket, user,(cmd,msg) => {socket.sendUTF(tc.getJson({type:cmd, message: msg}));});
+                    if (testJSON(msg)) {
+                        ed.events.triggerChannel("node-reponse", JSON.parse(msg));
+                    } else {
+                        ed.socket.actions.filter(x => msg.startsWith(x.id))[0].command(msg,socket, user,(cmd,msg) => {socket.sendUTF(tc.getJson({type:cmd, message: msg}));});
+                    }
+
                 } catch (error) {
                     socket.sendUTF(tc.getJson({type:"error", message: "Unknown Command",error: error}));
                     ed.log(error);
@@ -353,3 +403,15 @@ ed.startWebserver = () => {
         });
     })
 };
+function testJSON(text){
+    if (typeof text!=="string"){
+        return false;
+    }
+    try{
+        JSON.parse(text);
+        return true;
+    }
+    catch (error){
+        return false;
+    }
+}

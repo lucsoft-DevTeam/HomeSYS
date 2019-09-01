@@ -9,26 +9,26 @@ ed.loadModule = () => {
     ed.homekit = ed.getModule("lucsoft.HAPWrapper").data;
     
     ed.events = ed.getModule("lucsoft.eventManager").data;
-    ed.web.apiRequest("getDevices", (e) => {
-        if(e.message.message.length == 0) {
-            ed.log("You dont own registred Devices");
-        } else {
-            ed.log("Connecting to " + e.message.message.length + " Nodes");
-            e.message.message.forEach((e) => {
-                ed.web.request.get('http://' + e.serialnumber + "/info?key=" + e.key,{timeout: 300}, (err,msg) => {
-                    if(err == null) {
-                        var response = JSON.parse(msg.body);
-                        ed.addDevice({
-                            firmware:response.firmware,
-                            serialnumber: response.serialnumber,
-                            features: response.features,
-                            key: (response.features.indexOf("keyUpdate") != -1) ? e.key:false
-                        });   
-                    }
-                })
-            });
-        }
-    });
+    // ed.web.apiRequest("getDevices", (e) => {
+        // if(e.message.message.length == 0) {
+            // ed.log("You dont own registred Devices");
+        // } else {
+            // ed.log("Connecting to " + e.message.message.length + " Nodes");
+            // e.message.message.forEach((e) => {
+                // ed.web.request.get('http://' + e.serialnumber + "/info?key=" + e.key,{timeout: 300}, (err,msg) => {
+                    // if(err == null) {
+                        // var response = JSON.parse(msg.body);
+                        // ed.addDevice({
+                            // firmware:response.firmware,
+                            // serialnumber: response.serialnumber,
+                            // features: response.features,
+                            // key: (response.features.indexOf("keyUpdate") != -1) ? e.key:false
+                        // });   
+                    // }
+                // })
+            // });
+        // }
+    // });
 };
 ed.updateConfig = () => {
     ed.loadedConfig = require('../configs/lucsoft.deviceManager/config.json');
@@ -41,16 +41,6 @@ ed.addPages = (web,requireAuth,callback) => {
     web.get("/device/connected", function (req,res) {
         requireAuth(req,res,() => {
             res.status(200).send(tc.getJson(ed.devices));
-        });
-    })
-    web.get("/device/control", function (req,res) {
-        requireAuth(req,res,() => {
-            var device = ed.devices.filter(x => x.serialNumber == req.query.serialNumber);
-            if(device.length == 1 ) {
-                ed.web.requestWeb("http://" + device.ip + "/" + req.query.command,(e) => {
-                    res.status(200).send(e);
-                }, true);
-            }
         });
     })
     web.get("/device/online", function (req,res) {
@@ -73,7 +63,10 @@ ed.addPages = (web,requireAuth,callback) => {
     });
     callback();
 };
-
+ed.tokenlist = [{name: "HSM-BTlhESBplyfSyyk", token:"sbHEkmOFRXxIQwDGsSJgYmCmhAYdIORY"}]
+ed.getTokenDevice = (name) => {
+    return ed.tokenlist.filter(x => x.name == name)[0].token;
+};
 ed.addDevice = (obj) => {
     if(ed.devices.filter(x => x.serialnumber == obj.serialnumber).length == 0){
         if(ed.config.get().registered[obj.serialnumber] == undefined) {
