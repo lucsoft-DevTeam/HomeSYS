@@ -1,4 +1,4 @@
-![logo](https://lucsoft.de/imgs/homesys)
+![logo](https://lucsoft.de/imgs/homesys/HomeSYS2_csh_compressed.png)
 
   Combined Smart Home
   
