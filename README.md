@@ -1,5 +1,5 @@
 <p align="center">
-<img src="https://raw.githubusercontent.com/lucsoft-DevTeam/logos/master/HomeSYS%20Big/HomeSYS%20Big.png">
+<img src="https://raw.githubusercontent.com/lucsoft-DevTeam/logos/master/HomeSYS%20Big/HomeSYS%20Big@3x.png" width="100%">
 </p>
 
 <h1> HomeSYS App</h1>
