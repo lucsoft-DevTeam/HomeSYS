@@ -1,7 +1,25 @@
-![logo](https://lucsoft.de/imgs/homesys/HomeSYS2_csh_compressed.png)
+<p align="center">
+<img src="https://raw.githubusercontent.com/lucsoft-DevTeam/logos/master/HomeSYS%20Big/HomeSYS%20Big.png">
+</p>
 
-  Combined Smart Home
+<h1> HomeSYS App</h1>
+
+<p>
+  <img align="left" src="https://github.com/lucsoft-DevTeam/logos/raw/master/HomeSYS/HomeSYS@3x.png?raw=true" width="30%">
+  <a href="https://github.com/lucsoft-DevTeam/App"><h3>View Source Code</h3></a>
   
-# This Project is still in Alpha...
-### If you know what you doing you can install it now! [Click here for a Guide](https://github.com/lucsoft-DevTeam/HomeSYS/tree/master/Mainframe)
-### Do you wanna Develop with us? [Join our Discord!](https://discord.gg/9GHYtuu)
+  <a href="https://beta.hmsys.de"><h3>Show Website</h3></a>
+</p>
+
+<h1> HmSYS </h1>
+
+<p>
+<img align="left" src="https://github.com/lucsoft-DevTeam/logos/blob/master/HmSYS/HmSYS.png?raw=true" width="30%">
+
+<a href="https://eu01.hmsys.de"><h3>Show Website</h3></a>
+
+</p>
+<br><br><br><br><br>
+<h1> HomeSYS SNCSwitch</h1>
+
+Coming Soon online
